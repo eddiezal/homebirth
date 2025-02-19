@@ -1,0 +1,74 @@
+:root {
+  /* Use Montserrat for primary elements */
+  font-family: 'Montserrat', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* Brand color scheme for light mode */
+  color-scheme: light dark;
+  color: #2C2C2C;            /* Dark Slate for body text */
+  background-color: #F6E9D8;   /* Warm Beige background */
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #91A8D0;            /* Dusty Blue for links */
+  text-decoration: inherit;
+}
+a:hover {
+  color: #7A90C0;            /* Slightly darker Dusty Blue on hover */
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-family: 'Montserrat', sans-serif;  /* Headlines in Montserrat */
+  font-size: 3.2em;
+  line-height: 1.1;
+  color: #A9C5A0;            /* Deep Organic Green for headlines */
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #A9C5A0;   /* Deep Organic Green for primary CTAs */
+  color: #2C2C2C;            /* Dark Slate for button text */
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #E0E0E0;     /* Soft Gray border on hover */
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* In dark mode, invert the palette for better contrast */
+    color: #F6E9D8;         /* Warm Beige for text */
+    background-color: #2C2C2C; /* Dark Slate background */
+  }
+  a:hover {
+    color: #7A90C0;
+  }
+  button {
+    background-color: #A9C5A0;
+  }
+}
