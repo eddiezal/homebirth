@@ -4,10 +4,10 @@
   line-height: 1.5;
   font-weight: 400;
 
-  /* Brand color scheme for light mode */
-  color-scheme: light dark;
+  /* Single brand color scheme (light mode) */
+  /* Removed color-scheme: light dark; to avoid auto dark mode */
   color: #2C2C2C;            /* Dark Slate for body text */
-  background-color: #F6E9D8;   /* Warm Beige background */
+  background-color: #F6E9D8; /* Warm Beige background */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -26,10 +26,9 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
-  min-height: 100vh;
+  background-color: #F6E9D8; /* Warm Beige */
+  /* Removed display: flex and place-items for a simple vertical flow */
 }
 
 h1 {
@@ -59,16 +58,4 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* In dark mode, invert the palette for better contrast */
-    color: #F6E9D8;         /* Warm Beige for text */
-    background-color: #2C2C2C; /* Dark Slate background */
-  }
-  a:hover {
-    color: #7A90C0;
-  }
-  button {
-    background-color: #A9C5A0;
-  }
-}
+/* Removed the prefers-color-scheme: dark media query to maintain a single color theme */
