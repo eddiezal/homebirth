@@ -23,7 +23,6 @@ export function ConsultRequestModal({
     name: "",
     email: "",
     phone: "",
-    password: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -65,7 +64,6 @@ export function ConsultRequestModal({
       parentName: form.name,
       parentEmail: form.email,
       parentPhone: form.phone,
-      password: form.password || undefined,
       submittedAt: new Date().toISOString(),
     });
 
@@ -87,18 +85,8 @@ export function ConsultRequestModal({
         className="absolute right-4 top-4 rounded-full p-1 text-muted hover:bg-gray-100 hover:text-heading"
         aria-label="Close"
       >
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6 18L18 6M6 6l12 12"
-          />
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
 
@@ -115,12 +103,9 @@ export function ConsultRequestModal({
             {initials}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-heading">
-              {provider.name}
-            </p>
+            <p className="text-sm font-semibold text-heading">{provider.name}</p>
             <p className="text-xs text-muted">
-              {provider.credentials} · {provider.location} ·{" "}
-              {provider.distance} mi
+              {provider.credentials} · {provider.location} · {provider.distance} mi
             </p>
           </div>
           <span className="text-lg font-bold text-primary">
@@ -157,17 +142,9 @@ export function ConsultRequestModal({
           onChange={(e) => updateField("phone", e.target.value)}
           error={errors.phone}
         />
-        <Input
-          label="Password"
-          type="password"
-          placeholder="Create a password"
-          value={form.password}
-          onChange={(e) => updateField("password", e.target.value)}
-          hint="(or skip — we'll email you a sign-in link)"
-        />
 
         <Button fullWidth className="mt-1">
-          Send request & create account
+          Send request
         </Button>
       </form>
 
@@ -204,11 +181,7 @@ export function ConsultRequestModal({
       {/* Sign in link */}
       <p className="mt-3 text-center text-sm text-muted">
         Already have an account?{" "}
-        <Link
-          href="/sign-in"
-          className="font-medium text-primary hover:underline"
-          onClick={onClose}
-        >
+        <Link href="/sign-in" className="font-medium text-primary hover:underline" onClick={onClose}>
           Sign in
         </Link>
       </p>

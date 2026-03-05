@@ -4,6 +4,5 @@ export interface ConsultRequest {
   parentName: string;
   parentEmail: string;
   parentPhone: string;
-  password?: string;
   submittedAt: string;
 }

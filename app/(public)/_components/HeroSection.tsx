@@ -16,7 +16,7 @@ export function HeroSection() {
   }
 
   return (
-    <section className="pb-20 pt-16">
+    <section id="hero" className="pb-20 pt-16">
       <Container className="flex flex-col items-center text-center">
         <div className="mb-6 h-1 w-16 rounded-full bg-primary" />
 

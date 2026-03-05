@@ -15,6 +15,11 @@ export interface IntakeQuestion {
   options: IntakeOption[];
   required: boolean;
   skippable: boolean;
+  /** Optional: only show this question if a previous answer matches */
+  showIf?: {
+    questionId: string;
+    value: string | string[];
+  };
 }
 
 export type IntakeAnswers = Record<string, string | string[]>;

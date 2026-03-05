@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { loadIntakeAnswers } from "@/lib/utils/intake-storage";
 import { AnimatedDots } from "./AnimatedDots";
 import { ProcessingChecklist } from "./ProcessingChecklist";
 
@@ -19,11 +20,21 @@ export function ProcessingScreen() {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
   const [sublineIndex, setSublineIndex] = useState(0);
+  const sublineRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const navigateToResults = useCallback(() => {
     router.push("/results");
   }, [router]);
 
+  // Guard — if no intake data, send back to intake
+  useEffect(() => {
+    const data = loadIntakeAnswers();
+    if (!data) {
+      router.replace("/intake");
+    }
+  }, [router]);
+
+  // Progress bar
   useEffect(() => {
     const startTime = Date.now();
 
@@ -34,6 +45,8 @@ export function ProcessingScreen() {
 
       if (newProgress >= 100) {
         clearInterval(progressInterval);
+        // Stop subline cycling too
+        if (sublineRef.current) clearInterval(sublineRef.current);
         setTimeout(navigateToResults, 400);
       }
     }, 50);
@@ -41,12 +54,15 @@ export function ProcessingScreen() {
     return () => clearInterval(progressInterval);
   }, [navigateToResults]);
 
+  // Subline cycling
   useEffect(() => {
-    const interval = setInterval(() => {
+    sublineRef.current = setInterval(() => {
       setSublineIndex((prev) => (prev + 1) % sublines.length);
     }, SUBLINE_INTERVAL);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (sublineRef.current) clearInterval(sublineRef.current);
+    };
   }, []);
 
   return (

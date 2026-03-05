@@ -15,7 +15,9 @@ export function PricingTab({ provider }: PricingTabProps) {
           {provider.priceRange}
         </p>
         {provider.slidingScale && (
-          <Badge variant="teal">Sliding scale available</Badge>
+          <div className="mt-2">
+            <Badge variant="teal">Sliding scale available</Badge>
+          </div>
         )}
       </div>
 

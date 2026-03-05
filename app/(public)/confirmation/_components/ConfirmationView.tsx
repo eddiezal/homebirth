@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Container, Card, Badge, Button } from "@/components/ui";
 import { getProviderById } from "@/lib/data/mock-providers";
 import { loadConsultRequest } from "@/lib/utils/consult-storage";
 import { StatusTimeline } from "./StatusTimeline";
 import { PrepCard } from "./PrepCard";
 import type { ConsultRequest } from "@/lib/types/consult";
-import type { ProviderProfile } from "@/lib/types/provider";
 
 export function ConfirmationView() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const providerId = searchParams.get("provider") || "";
   const [consult, setConsult] = useState<ConsultRequest | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -23,18 +23,16 @@ export function ConfirmationView() {
 
   const provider = getProviderById(providerId);
 
-  if (!loaded) {
+  useEffect(() => {
+    if (loaded && !provider) {
+      router.replace("/results");
+    }
+  }, [loaded, provider, router]);
+
+  if (!loaded || !provider) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <p className="text-muted">Loading...</p>
-      </div>
-    );
-  }
-
-  if (!provider) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-muted">Provider not found.</p>
       </div>
     );
   }
@@ -47,7 +45,9 @@ export function ConfirmationView() {
   const timelineSteps = [
     {
       label: "Request sent",
-      detail: consult ? `Just now · ${new Date(consult.submittedAt).toLocaleTimeString()}` : "Just now",
+      detail: consult
+        ? `Just now · ${new Date(consult.submittedAt).toLocaleTimeString()}`
+        : "Just now",
       completed: true,
     },
     {
@@ -73,11 +73,7 @@ export function ConfirmationView() {
         {/* Success header */}
         <div className="text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-light">
-            <svg
-              className="h-7 w-7 text-primary"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
+            <svg className="h-7 w-7 text-primary" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
                 d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -129,34 +125,14 @@ export function ConfirmationView() {
               </p>
               <div className="mt-3 flex items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-light px-3 py-1 text-xs font-medium text-primary">
-                  <svg
-                    className="h-3 w-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                   Email
                 </span>
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-light px-3 py-1 text-xs font-medium text-primary">
-                  <svg
-                    className="h-3 w-3"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                    />
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
                   Text
                 </span>
@@ -169,7 +145,6 @@ export function ConfirmationView() {
             <div className="flex flex-col gap-6">
               <PrepCard />
 
-              {/* Compare CTA */}
               <Card variant="teal">
                 <h3 className="text-sm font-semibold text-heading">
                   Want to compare options?

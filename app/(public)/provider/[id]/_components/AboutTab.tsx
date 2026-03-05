@@ -5,6 +5,12 @@ interface AboutTabProps {
   provider: ProviderProfile;
 }
 
+const verificationLabels: Record<string, string> = {
+  identity: "Identity verified",
+  license: "License verified",
+  practice: "Practice verified",
+};
+
 export function AboutTab({ provider }: AboutTabProps) {
   return (
     <div className="flex flex-col gap-8">
@@ -61,9 +67,7 @@ export function AboutTab({ provider }: AboutTabProps) {
       {/* Scope of care */}
       {provider.scope.length > 0 && (
         <section>
-          <h3 className="text-sm font-semibold text-heading">
-            Scope of care
-          </h3>
+          <h3 className="text-sm font-semibold text-heading">Scope of care</h3>
           <ul className="mt-2 flex flex-col gap-1.5">
             {provider.scope.map((item) => (
               <li key={item} className="flex items-center gap-2 text-sm">
@@ -185,10 +189,9 @@ export function AboutTab({ provider }: AboutTabProps) {
                     v.verified ? "text-heading" : "text-muted"
                   }`}
                 >
-                  {v.type === "identity" && "Identity verified"}
-                  {v.type === "license" && "License verified"}
-                  {v.type === "practice" && "Practice verified"}
-                  {!v.verified && " — pending"}
+                  {v.verified
+                    ? verificationLabels[v.type] ?? v.type
+                    : `${verificationLabels[v.type] ?? v.type} — pending`}
                 </p>
                 {v.verified && v.detail && (
                   <p className="text-xs text-muted">{v.detail}</p>

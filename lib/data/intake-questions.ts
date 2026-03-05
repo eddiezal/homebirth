@@ -1,5 +1,39 @@
 import type { IntakeQuestion } from "@/lib/types/intake";
 
+/** Generate quarterly due date options starting from next quarter */
+function generateDueDateOptions() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-indexed
+
+  // Current quarter index (0-3)
+  const currentQ = Math.floor(month / 3);
+
+  const quarters = [
+    { label: "Jan – Mar", suffix: "q1", startMonth: 0 },
+    { label: "Apr – Jun", suffix: "q2", startMonth: 3 },
+    { label: "Jul – Sep", suffix: "q3", startMonth: 6 },
+    { label: "Oct – Dec", suffix: "q4", startMonth: 9 },
+  ];
+
+  const options = [];
+  let q = currentQ;
+  let y = year;
+
+  // Generate 6 future quarters
+  for (let i = 0; i < 6; i++) {
+    q++;
+    if (q > 3) { q = 0; y++; }
+    options.push({
+      id: `${y}-${quarters[q].suffix}`,
+      label: `${quarters[q].label} ${y}`,
+    });
+  }
+
+  options.push({ id: "not-sure", label: "Not sure yet" });
+  return options;
+}
+
 export const intakeQuestions: IntakeQuestion[] = [
   // ── Hard Filters ──────────────────────────────────────────
   {
@@ -10,9 +44,9 @@ export const intakeQuestions: IntakeQuestion[] = [
       "Your provider may come to you, but proximity matters for prenatal visits and emergency transfers.",
     type: "single",
     options: [
-      { id: "5", label: "5 miles" },
-      { id: "10", label: "10 miles" },
-      { id: "20", label: "20 miles" },
+      { id: "5",   label: "5 miles" },
+      { id: "10",  label: "10 miles" },
+      { id: "20",  label: "20 miles" },
       { id: "30+", label: "30+ miles" },
     ],
     required: true,
@@ -25,13 +59,7 @@ export const intakeQuestions: IntakeQuestion[] = [
     helperText:
       "This helps us find providers who have availability around your timeline.",
     type: "single",
-    options: [
-      { id: "2026-q2", label: "Apr – Jun 2026" },
-      { id: "2026-q3", label: "Jul – Sep 2026" },
-      { id: "2026-q4", label: "Oct – Dec 2026" },
-      { id: "2027-q1", label: "Jan – Mar 2027" },
-      { id: "not-sure", label: "Not sure yet" },
-    ],
+    options: generateDueDateOptions(),
     required: true,
     skippable: false,
   },
@@ -43,9 +71,9 @@ export const intakeQuestions: IntakeQuestion[] = [
       "No rush is totally fine — this helps us prioritize your results.",
     type: "single",
     options: [
-      { id: "no-rush", label: "No rush", description: "Just exploring my options" },
-      { id: "within-month", label: "Within a month", description: "Actively looking" },
-      { id: "urgent", label: "Urgent — within 2 weeks", description: "Need to find someone soon" },
+      { id: "no-rush",      label: "No rush",                  description: "Just exploring my options" },
+      { id: "within-month", label: "Within a month",           description: "Actively looking" },
+      { id: "urgent",       label: "Urgent — within 2 weeks",  description: "Need to find someone soon" },
     ],
     required: true,
     skippable: false,
@@ -58,9 +86,9 @@ export const intakeQuestions: IntakeQuestion[] = [
       "This determines which providers match — some specialize in specific settings.",
     type: "single",
     options: [
-      { id: "home", label: "Home birth" },
+      { id: "home",         label: "Home birth" },
       { id: "birth-center", label: "Birth center" },
-      { id: "either", label: "Either — I'm flexible" },
+      { id: "either",       label: "Either — I'm flexible" },
     ],
     required: true,
     skippable: false,
@@ -72,11 +100,11 @@ export const intakeQuestions: IntakeQuestion[] = [
     helperText: "We'll match you with providers who accept your payment method.",
     type: "single",
     options: [
-      { id: "self-pay", label: "Self-pay" },
+      { id: "self-pay",  label: "Self-pay" },
       { id: "insurance", label: "Insurance" },
-      { id: "medicaid", label: "Medicaid" },
-      { id: "not-sure", label: "Not sure yet" },
-      { id: "flexible", label: "Flexible" },
+      { id: "medicaid",  label: "Medicaid" },
+      { id: "not-sure",  label: "Not sure yet" },
+      { id: "flexible",  label: "Flexible" },
     ],
     required: true,
     skippable: false,
@@ -86,14 +114,14 @@ export const intakeQuestions: IntakeQuestion[] = [
     category: "hard-filter",
     question: "What's your budget range?",
     helperText:
-      "Homebirth costs vary by region. These ranges reflect typical San Diego pricing.",
+      "Costs vary by region and provider. These ranges reflect typical out-of-hospital birth pricing.",
     type: "single",
     options: [
       { id: "under-3k", label: "Under $3,000" },
-      { id: "3k-5k", label: "$3,000 – $5,000" },
-      { id: "5k-8k", label: "$5,000 – $8,000" },
-      { id: "8k-plus", label: "$8,000+" },
-      { id: "unsure", label: "Not sure — show me options" },
+      { id: "3k-5k",    label: "$3,000 – $5,000" },
+      { id: "5k-8k",    label: "$5,000 – $8,000" },
+      { id: "8k-plus",  label: "$8,000+" },
+      { id: "unsure",   label: "Not sure — show me options" },
     ],
     required: false,
     skippable: true,
@@ -109,7 +137,7 @@ export const intakeQuestions: IntakeQuestion[] = [
     type: "single",
     options: [
       { id: "yes", label: "Yes — first time" },
-      { id: "no", label: "No — I've given birth before" },
+      { id: "no",  label: "No — I've given birth before" },
     ],
     required: true,
     skippable: false,
@@ -122,12 +150,14 @@ export const intakeQuestions: IntakeQuestion[] = [
       "Vaginal birth after cesarean requires specific experience. We'll match accordingly.",
     type: "single",
     options: [
-      { id: "yes", label: "Yes" },
-      { id: "no", label: "No" },
+      { id: "yes",   label: "Yes" },
+      { id: "no",    label: "No" },
       { id: "maybe", label: "Maybe — I'd like to discuss it" },
     ],
     required: true,
     skippable: false,
+    // Only show if they've given birth before
+    showIf: { questionId: "first-birth", value: "no" },
   },
   {
     id: "higher-risk",
@@ -137,8 +167,8 @@ export const intakeQuestions: IntakeQuestion[] = [
       "This is for routing only — not a medical assessment. Some providers have more experience with complex pregnancies.",
     type: "single",
     options: [
-      { id: "yes", label: "Yes" },
-      { id: "no", label: "No" },
+      { id: "yes",    label: "Yes" },
+      { id: "no",     label: "No" },
       { id: "unsure", label: "Unsure — I'd like guidance" },
     ],
     required: false,
@@ -150,12 +180,13 @@ export const intakeQuestions: IntakeQuestion[] = [
     id: "care-style",
     category: "soft-match",
     question: "What care style do you prefer?",
-    helperText: "There's no wrong answer — this helps match you with providers whose approach fits yours.",
+    helperText:
+      "There's no wrong answer — this helps match you with providers whose approach fits yours.",
     type: "single",
     options: [
-      { id: "hands-off", label: "Hands-off", description: "I want autonomy and minimal intervention" },
-      { id: "balanced", label: "Balanced", description: "Guidance when I need it, space when I don't" },
-      { id: "guided", label: "Guided", description: "I want an active, involved provider" },
+      { id: "hands-off", label: "Hands-off",  description: "I want autonomy and minimal intervention" },
+      { id: "balanced",  label: "Balanced",   description: "Guidance when I need it, space when I don't" },
+      { id: "guided",    label: "Guided",     description: "I want an active, involved provider" },
     ],
     required: true,
     skippable: false,
@@ -167,10 +198,10 @@ export const intakeQuestions: IntakeQuestion[] = [
     helperText: "Your provider's communication style matters — especially during labor.",
     type: "single",
     options: [
-      { id: "direct", label: "Direct", description: "Tell me what I need to know, clearly" },
-      { id: "gentle", label: "Gentle", description: "Warm and reassuring tone" },
+      { id: "direct",      label: "Direct",      description: "Tell me what I need to know, clearly" },
+      { id: "gentle",      label: "Gentle",      description: "Warm and reassuring tone" },
       { id: "educational", label: "Educational", description: "Explain the why behind everything" },
-      { id: "minimal", label: "Minimal", description: "Speak when spoken to, keep it calm" },
+      { id: "minimal",     label: "Minimal",     description: "Speak when spoken to, keep it calm" },
     ],
     required: true,
     skippable: false,
@@ -179,13 +210,14 @@ export const intakeQuestions: IntakeQuestion[] = [
     id: "top-priority",
     category: "soft-match",
     question: "What's most important to you in a provider?",
-    helperText: "Pick the one that resonates most. All good providers offer these — this is about emphasis.",
+    helperText:
+      "Pick the one that resonates most. All good providers offer these — this is about emphasis.",
     type: "single",
     options: [
       { id: "calm-reassurance", label: "Calm reassurance", description: "I want to feel safe and held" },
-      { id: "evidence-based", label: "Evidence-based", description: "I want data and research to guide decisions" },
-      { id: "advocacy", label: "Advocacy", description: "I want someone who'll fight for my wishes" },
-      { id: "holistic", label: "Holistic", description: "I want whole-person care — body, mind, spirit" },
+      { id: "evidence-based",   label: "Evidence-based",   description: "I want data and research to guide decisions" },
+      { id: "advocacy",         label: "Advocacy",         description: "I want someone who'll fight for my wishes" },
+      { id: "holistic",         label: "Holistic",         description: "I want whole-person care — body, mind, spirit" },
     ],
     required: true,
     skippable: false,
@@ -197,10 +229,10 @@ export const intakeQuestions: IntakeQuestion[] = [
     helperText: "We'll prioritize providers who speak your preferred language.",
     type: "single",
     options: [
-      { id: "english", label: "English" },
-      { id: "spanish", label: "Spanish" },
+      { id: "english",   label: "English" },
+      { id: "spanish",   label: "Spanish" },
       { id: "bilingual", label: "Bilingual (English/Spanish)" },
-      { id: "other", label: "Other" },
+      { id: "other",     label: "Other" },
     ],
     required: false,
     skippable: true,
@@ -212,10 +244,10 @@ export const intakeQuestions: IntakeQuestion[] = [
     helperText: "Select all that apply. These are optional but help us find the best fit.",
     type: "multi-select",
     options: [
-      { id: "trauma-informed", label: "Trauma-informed care" },
-      { id: "lgbtq-affirming", label: "LGBTQ+ affirming" },
-      { id: "culturally-specific", label: "Culturally specific care" },
-      { id: "none", label: "No specific preference" },
+      { id: "trauma-informed",    label: "Trauma-informed care" },
+      { id: "lgbtq-affirming",    label: "LGBTQ+ affirming" },
+      { id: "culturally-specific",label: "Culturally specific care" },
+      { id: "none",               label: "No specific preference" },
     ],
     required: false,
     skippable: true,
@@ -228,8 +260,8 @@ export const intakeQuestions: IntakeQuestion[] = [
     type: "single",
     options: [
       { id: "hospital-collaboration", label: "Hospital collaboration", description: "Strong hospital relationships and seamless transfers" },
-      { id: "calm-guidance", label: "Calm guidance", description: "Focused on keeping you calm and informed" },
-      { id: "no-preference", label: "No preference" },
+      { id: "calm-guidance",          label: "Calm guidance",          description: "Focused on keeping you calm and informed" },
+      { id: "no-preference",          label: "No preference" },
     ],
     required: false,
     skippable: true,
@@ -240,12 +272,13 @@ export const intakeQuestions: IntakeQuestion[] = [
     id: "faith-importance",
     category: "values",
     question: "Are faith or spiritual practices important to your birth experience?",
-    helperText: "Values & Preferences — Optional. This helps match you with providers who share your approach.",
+    helperText:
+      "Optional. This helps match you with providers who share your approach.",
     type: "single",
     options: [
-      { id: "important", label: "Important to me" },
-      { id: "nice-to-have", label: "Nice to have" },
-      { id: "no-preference", label: "No preference" },
+      { id: "important",      label: "Important to me" },
+      { id: "nice-to-have",   label: "Nice to have" },
+      { id: "no-preference",  label: "No preference" },
       { id: "prefer-secular", label: "Prefer secular" },
     ],
     required: false,
@@ -258,28 +291,33 @@ export const intakeQuestions: IntakeQuestion[] = [
     helperText: "This is about the overall vibe — not a specific religion.",
     type: "single",
     options: [
-      { id: "faith-based", label: "Faith-based" },
-      { id: "spiritual-nondenom", label: "Spiritual but non-denominational" },
-      { id: "secular", label: "Secular" },
-      { id: "not-sure", label: "Not sure" },
+      { id: "faith-based",          label: "Faith-based" },
+      { id: "spiritual-nondenom",   label: "Spiritual but non-denominational" },
+      { id: "secular",              label: "Secular" },
+      { id: "not-sure",             label: "Not sure" },
     ],
     required: false,
     skippable: true,
+    // Only show if faith is important or nice-to-have
+    showIf: { questionId: "faith-importance", value: ["important", "nice-to-have"] },
   },
   {
     id: "comfort-preferences",
     category: "values",
     question: "Any comfort preferences for your birth space?",
-    helperText: "Select all that apply. These help match you with providers who can honor your needs.",
+    helperText:
+      "Select all that apply. These help match you with providers who can honor your needs.",
     type: "multi-select",
     options: [
-      { id: "prayer", label: "Prayer or meditation welcome" },
-      { id: "modesty", label: "Modesty accommodations" },
-      { id: "female-only", label: "Female-only birth team" },
-      { id: "clergy-welcome", label: "Clergy or spiritual leader welcome" },
-      { id: "none", label: "No specific preferences" },
+      { id: "prayer",          label: "Prayer or meditation welcome" },
+      { id: "modesty",         label: "Modesty accommodations" },
+      { id: "female-only",     label: "Female-only birth team" },
+      { id: "clergy-welcome",  label: "Clergy or spiritual leader welcome" },
+      { id: "none",            label: "No specific preferences" },
     ],
     required: false,
     skippable: true,
+    // Only show if faith is important or nice-to-have
+    showIf: { questionId: "faith-importance", value: ["important", "nice-to-have"] },
   },
 ];

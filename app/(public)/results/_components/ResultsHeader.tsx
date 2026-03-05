@@ -9,22 +9,59 @@ interface ResultsHeaderProps {
   answers: IntakeAnswers;
 }
 
-const answerLabels: Record<string, Record<string, string>> = {
-  "birth-setting": { home: "Home birth", "birth-center": "Birth center", either: "Either setting" },
-  "due-date": { "2026-q2": "Apr–Jun 2026", "2026-q3": "Jul–Sep 2026", "2026-q4": "Oct–Dec 2026", "2027-q1": "Jan–Mar 2027" },
-  vbac: { yes: "VBAC", maybe: "VBAC (maybe)" },
-  payment: { insurance: "Insurance", "self-pay": "Self-pay", medicaid: "Medicaid" },
-  "care-style": { "hands-off": "Hands-off", balanced: "Balanced care", guided: "Guided" },
+/** Parse a dynamic due date ID like "2026-q3" into "Jul–Sep 2026" */
+function parseDueDateLabel(id: string): string | null {
+  const match = id.match(/^(\d{4})-q([1-4])$/);
+  if (!match) return null;
+  const year = match[1];
+  const quarter = parseInt(match[2], 10);
+  const labels: Record<number, string> = {
+    1: "Jan–Mar",
+    2: "Apr–Jun",
+    3: "Jul–Sep",
+    4: "Oct–Dec",
+  };
+  return `${labels[quarter]} ${year}`;
+}
+
+const staticAnswerLabels: Record<string, Record<string, string>> = {
+  "birth-setting": {
+    home: "Home birth",
+    "birth-center": "Birth center",
+    either: "Either setting",
+  },
+  vbac: {
+    yes: "VBAC",
+    maybe: "VBAC (maybe)",
+  },
+  payment: {
+    insurance: "Insurance",
+    "self-pay": "Self-pay",
+    medicaid: "Medicaid",
+  },
+  "care-style": {
+    "hands-off": "Hands-off",
+    balanced: "Balanced care",
+    guided: "Guided",
+  },
 };
 
 export function ResultsHeader({ count, location, answers }: ResultsHeaderProps) {
   const pills: string[] = [];
 
-  for (const [key, labelMap] of Object.entries(answerLabels)) {
+  // Static label lookups
+  for (const [key, labelMap] of Object.entries(staticAnswerLabels)) {
     const val = answers[key];
     if (typeof val === "string" && labelMap[val]) {
       pills.push(labelMap[val]);
     }
+  }
+
+  // Dynamic due date — parse from ID format
+  const dueDateVal = answers["due-date"];
+  if (typeof dueDateVal === "string" && dueDateVal !== "not-sure") {
+    const label = parseDueDateLabel(dueDateVal);
+    if (label) pills.push(label);
   }
 
   return (

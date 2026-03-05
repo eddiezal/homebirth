@@ -5,7 +5,7 @@ const featuredArticle = {
   description:
     "Everything you need to know about planning a home birth — from finding a provider to preparing your space.",
   readTime: "8 min read",
-  href: "/resources/beginners-guide",
+  href: "/resources",
 };
 
 const guides = [
@@ -13,25 +13,25 @@ const guides = [
     title: "Is homebirth right for me?",
     description: "A framework for evaluating whether home birth fits your situation.",
     readTime: "4 min",
-    href: "/resources/is-homebirth-right",
+    href: "/resources",
   },
   {
     title: "Midwife vs. doula — explained",
     description: "The roles, training, and what each brings to your birth experience.",
     readTime: "3 min",
-    href: "/resources/midwife-vs-doula",
+    href: "/resources",
   },
   {
     title: "What does homebirth cost?",
     description: "Real pricing breakdowns, insurance options, and financial planning.",
     readTime: "5 min",
-    href: "/resources/cost",
+    href: "/resources",
   },
   {
     title: "How to evaluate a provider",
     description: "Questions, red flags, and what to look for in a midwife or doula.",
     readTime: "4 min",
-    href: "/resources/evaluate-provider",
+    href: "/resources",
   },
 ];
 
@@ -53,16 +53,14 @@ export function StartHereHub() {
             <p className="mt-2 text-muted">{featuredArticle.description}</p>
             <div className="mt-4 flex items-center gap-4">
               <ArrowLink href={featuredArticle.href}>Read</ArrowLink>
-              <span className="text-xs text-muted">
-                {featuredArticle.readTime}
-              </span>
+              <span className="text-xs text-muted">{featuredArticle.readTime}</span>
             </div>
           </div>
         </Card>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {guides.map((guide) => (
-            <Card key={guide.href} padding="p-5">
+            <Card key={guide.title} padding="p-5">
               <h3 className="font-semibold text-heading">{guide.title}</h3>
               <p className="mt-1 text-sm text-muted">{guide.description}</p>
               <div className="mt-3 flex items-center gap-4">
