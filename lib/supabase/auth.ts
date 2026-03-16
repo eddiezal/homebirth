@@ -29,9 +29,6 @@ export async function signInWithPassword(
     if (error.message.includes("Invalid login credentials")) {
       return { error: "That password isn't right.", field: "password" };
     }
-    if (error.message.includes("Email not confirmed")) {
-      return { error: "Please check your email to confirm your account.", field: "email" };
-    }
     return { error: error.message, field: "email" };
   }
 
@@ -74,27 +71,25 @@ export async function signUpProvider(
   password: string,
   credentials: string[]
 ): Promise<AuthResult> {
-  const supabase = await createClient();
+  const admin = createAdminClient();
 
-  // Create auth user
-  const { data, error } = await supabase.auth.signUp({
+  // Create auth user via admin API — bypasses email confirmation
+  const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
-    options: {
-      data: { role: "provider", name },
-    },
+    email_confirm: true,
+    user_metadata: { role: "provider", name },
   });
 
   if (error) {
-    if (error.message.includes("already registered")) {
+    if (error.message.includes("already been registered")) {
       return { error: "An account with this email already exists.", field: "email" };
     }
     return { error: error.message, field: "email" };
   }
 
-  // Create provider record using admin client (bypasses RLS since session isn't established yet)
+  // Create provider record
   if (data.user) {
-    const admin = createAdminClient();
     const { error: insertError } = await admin.from("providers").insert({
       user_id: data.user.id,
       name,
@@ -121,38 +116,28 @@ export async function signUpParent(
   phone: string,
   password?: string
 ): Promise<AuthResult & { parentId?: string }> {
-  const supabase = await createClient();
+  const admin = createAdminClient();
 
-  const signUpOptions: { email: string; password?: string; options: { data: { role: string; name: string } } } = {
+  // Create auth user via admin API — bypasses email confirmation
+  // If no password provided, user will sign in via magic links
+  const { data, error } = await admin.auth.admin.createUser({
     email,
-    options: {
-      data: { role: "parent", name },
-    },
-  };
+    password: password || undefined,
+    email_confirm: true,
+    user_metadata: { role: "parent", name },
+  });
 
-  let authResult;
-
-  if (password) {
-    authResult = await supabase.auth.signUp({ ...signUpOptions, password });
-  } else {
-    // Passwordless — create account with OTP
-    // First sign up with a random password (required by Supabase), then they use magic links
-    const tempPassword = crypto.randomUUID();
-    authResult = await supabase.auth.signUp({ ...signUpOptions, password: tempPassword });
-  }
-
-  if (authResult.error) {
-    if (authResult.error.message.includes("already registered")) {
+  if (error) {
+    if (error.message.includes("already been registered")) {
       return { error: "An account with this email already exists. Please sign in.", field: "email" };
     }
-    return { error: authResult.error.message, field: "email" };
+    return { error: error.message, field: "email" };
   }
 
-  // Create parent record using admin client (bypasses RLS since session isn't established yet)
-  if (authResult.data.user) {
-    const admin = createAdminClient();
+  // Create parent record
+  if (data.user) {
     const { data: parentData, error: insertError } = await admin.from("parents").insert({
-      user_id: authResult.data.user.id,
+      user_id: data.user.id,
       name,
       email,
       phone,
@@ -195,18 +180,16 @@ export async function claimProviderProfile(
     return { error: "This profile has already been claimed.", field: "email" };
   }
 
-  // Create auth user
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({
+  // Create auth user via admin API — bypasses email confirmation
+  const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
-    options: {
-      data: { role: "provider", name: provider.name },
-    },
+    email_confirm: true,
+    user_metadata: { role: "provider", name: provider.name },
   });
 
   if (error) {
-    if (error.message.includes("already registered")) {
+    if (error.message.includes("already been registered")) {
       return { error: "An account with this email already exists.", field: "email" };
     }
     return { error: error.message, field: "email" };
