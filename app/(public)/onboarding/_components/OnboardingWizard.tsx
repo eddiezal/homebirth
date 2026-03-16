@@ -12,6 +12,7 @@ import {
   saveOnboardingStep,
   clearOnboardingData,
 } from "@/lib/utils/onboarding-storage";
+import { saveProviderOnboarding } from "@/lib/queries/provider-profile";
 import { Step1Name } from "./Step1Name";
 import { Step2Location } from "./Step2Location";
 import { Step3Tagline } from "./Step3Tagline";
@@ -55,18 +56,21 @@ export function OnboardingWizard() {
     }
   }
 
-  function handleLaunch() {
-    // Mock launch — save to sessionStorage and redirect to dashboard
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem(
-        "homebirth_auth_session",
-        JSON.stringify({
-          email: "provider@practice.com",
-          name: data.fullName || "Provider User",
-          role: "provider",
-        })
-      );
+  const [launching, setLaunching] = useState(false);
+  const [launchError, setLaunchError] = useState("");
+
+  async function handleLaunch() {
+    setLaunching(true);
+    setLaunchError("");
+
+    const result = await saveProviderOnboarding(data);
+
+    if (result.error) {
+      setLaunchError(result.error);
+      setLaunching(false);
+      return;
     }
+
     clearOnboardingData();
     router.push("/provider-dashboard");
   }
@@ -157,7 +161,12 @@ export function OnboardingWizard() {
                 {currentStep < 8 ? (
                   <Button onClick={handleNext}>Continue</Button>
                 ) : (
-                  <Button onClick={handleLaunch}>Launch my profile →</Button>
+                  <Button onClick={handleLaunch} disabled={launching}>
+                    {launching ? "Launching..." : "Launch my profile →"}
+                  </Button>
+                )}
+                {launchError && (
+                  <p className="mt-2 text-sm text-red-500">{launchError}</p>
                 )}
               </div>
             </div>

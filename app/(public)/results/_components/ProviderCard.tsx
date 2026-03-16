@@ -4,16 +4,17 @@ import { Badge, Button } from "@/components/ui";
 interface ProviderCardProps {
   provider: Provider;
   onRequestConsult?: (providerId: string) => void;
+  highlighted?: boolean;
 }
 
-export function ProviderCard({ provider, onRequestConsult }: ProviderCardProps) {
+export function ProviderCard({ provider, onRequestConsult, highlighted }: ProviderCardProps) {
   const initials = provider.name
     .split(" ")
     .map((n) => n[0])
     .join("");
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-[12px] border border-card-border bg-white md:flex-row">
+    <div className={`flex flex-col overflow-hidden rounded-[12px] border bg-white transition-shadow md:flex-row ${highlighted ? "border-primary shadow-md" : "border-card-border"}`}>
       {/* Left side — Provider info */}
       <div className="flex-1 p-6">
         <div className="flex items-start gap-4">

@@ -18,6 +18,7 @@ export interface Provider {
   languages: string[];
   insuranceAccepted: string[];
   slidingScale: boolean;
+  onboardingComplete: boolean;
 }
 
 export interface ProviderReview {

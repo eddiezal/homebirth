@@ -1,43 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Container } from "@/components/ui";
-import { getUnreadMessageCount } from "@/lib/utils/notifications";
+import { signOut } from "@/lib/supabase/auth";
 
-export function ParentNav() {
+interface ParentNavProps {
+  parentName: string;
+}
+
+export function ParentNav({ parentName }: ParentNavProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [userName, setUserName] = useState("User");
 
-  useEffect(() => {
-    setUnreadCount(getUnreadMessageCount());
-    if (typeof window !== "undefined") {
-      const session = sessionStorage.getItem("homebirth_auth_session");
-      if (session) {
-        try {
-          const parsed = JSON.parse(session);
-          setUserName(parsed.name || "User");
-        } catch { /* ignore */ }
-      }
-    }
-  }, [pathname]);
-
-  const initials = userName
+  const initials = parentName
     .split(" ")
     .map((n) => n[0])
     .join("")
+    .substring(0, 2)
     .toUpperCase();
-
-  function handleSignOut() {
-    if (typeof window !== "undefined") {
-      sessionStorage.removeItem("homebirth_auth_session");
-    }
-    router.push("/");
-  }
 
   return (
     <nav className="sticky top-0 z-50 border-b border-card-border bg-white/95 backdrop-blur-sm">
@@ -59,11 +41,6 @@ export function ParentNav() {
             }`}
           >
             Messages
-            {unreadCount > 0 && (
-              <span className="absolute -right-2 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-                {unreadCount}
-              </span>
-            )}
           </Link>
 
           {/* Avatar dropdown */}
@@ -100,7 +77,7 @@ export function ParentNav() {
                   <div className="my-1 h-px bg-card-border" />
                   <button
                     type="button"
-                    onClick={handleSignOut}
+                    onClick={() => signOut()}
                     className="block w-full px-4 py-2 text-left text-sm text-muted hover:bg-gray-50"
                   >
                     Sign out

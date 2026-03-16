@@ -1,15 +1,18 @@
 "use client";
 
 import { Container, Card, Badge, Button, Timeline } from "@/components/ui";
-import { StarRating } from "@/components/ui";
-import { mockDashboardData } from "@/lib/data/mock-dashboard";
-import { mockLeads } from "@/lib/data/mock-leads";
+import type { ProviderDashboardData } from "@/lib/types/dashboard";
+import type { Lead } from "@/lib/types/lead";
 import { GreetingCard } from "./GreetingCard";
 import { MetricsSidebar } from "./MetricsSidebar";
 
-export function DashboardView() {
-  const d = mockDashboardData;
-  const newLeads = mockLeads.filter((l) => l.status === "new");
+interface DashboardViewProps {
+  data: ProviderDashboardData;
+  newLeads: Lead[];
+}
+
+export function DashboardView({ data, newLeads }: DashboardViewProps) {
+  const d = data;
 
   return (
     <section className="py-8">

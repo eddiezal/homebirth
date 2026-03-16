@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Container } from "@/components/ui";
-import { getNewLeadCount } from "@/lib/data/mock-leads";
 
 const providerTabs = [
   { label: "Dashboard", href: "/provider-dashboard" },
@@ -12,13 +10,19 @@ const providerTabs = [
   { label: "Profile", href: "/provider-profile" },
 ];
 
-export function ProviderNav() {
-  const pathname = usePathname();
-  const [newLeads, setNewLeads] = useState(0);
+interface ProviderNavProps {
+  providerName: string;
+  newLeadCount: number;
+}
 
-  useEffect(() => {
-    setNewLeads(getNewLeadCount());
-  }, [pathname]);
+export function ProviderNav({ providerName, newLeadCount }: ProviderNavProps) {
+  const pathname = usePathname();
+
+  const initials = providerName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2);
 
   return (
     <nav className="sticky top-0 z-50 border-b border-card-border bg-white/95 backdrop-blur-sm">
@@ -44,9 +48,9 @@ export function ProviderNav() {
                 }`}
               >
                 {tab.label}
-                {tab.label === "Inbox" && newLeads > 0 && (
+                {tab.label === "Inbox" && newLeadCount > 0 && (
                   <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-                    {newLeads}
+                    {newLeadCount}
                   </span>
                 )}
               </Link>
@@ -56,10 +60,10 @@ export function ProviderNav() {
 
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-light text-sm font-semibold text-primary">
-            SC
+            {initials}
           </div>
           <span className="hidden text-sm font-medium text-heading sm:block">
-            Sarah Chen
+            {providerName}
           </span>
         </div>
       </Container>

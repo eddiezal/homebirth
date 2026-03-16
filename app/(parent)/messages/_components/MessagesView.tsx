@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Container } from "@/components/ui";
-import { mockThreads } from "@/lib/data/mock-threads";
-import { loadParentThreads, saveParentThreads, confirmConsultTime } from "@/lib/utils/parent-storage";
+import { sendMessage, confirmTimeSlot } from "@/lib/queries/messages";
 import type { MessageThread } from "@/lib/types/message";
 import { ThreadList } from "./ThreadList";
 import { ConversationThread } from "./ConversationThread";
@@ -12,51 +11,41 @@ import { ThreadHeader } from "./ThreadHeader";
 import { MessageInput } from "./MessageInput";
 import { QuickSuggestions } from "./QuickSuggestions";
 
-export function MessagesView() {
+interface MessagesViewProps {
+  initialThreads: MessageThread[];
+}
+
+export function MessagesView({ initialThreads }: MessagesViewProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const consultParam = searchParams.get("consult");
 
-  const [threads, setThreads] = useState<MessageThread[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [mobileShowThread, setMobileShowThread] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    const stored = loadParentThreads();
-    const data = stored || mockThreads;
-    if (!stored) saveParentThreads(mockThreads);
-    setThreads(data);
-
-    // Deep link from dashboard
-    if (consultParam) {
-      setSelectedId(consultParam);
-      setMobileShowThread(true);
-    } else if (data.length > 0) {
-      setSelectedId(data[0].consultId);
-    }
-
-    setLoaded(true);
-  }, [consultParam]);
+  const [threads, setThreads] = useState<MessageThread[]>(initialThreads);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    consultParam || initialThreads[0]?.consultId || null
+  );
+  const [mobileShowThread, setMobileShowThread] = useState(!!consultParam);
 
   const selectedThread = threads.find((t) => t.consultId === selectedId) ?? null;
 
   function handleSelectThread(consultId: string) {
     setSelectedId(consultId);
     setMobileShowThread(true);
-    // Mark as read
-    setThreads((prev) => {
-      const updated = prev.map((t) =>
+    // Mark as read locally
+    setThreads((prev) =>
+      prev.map((t) =>
         t.consultId === consultId ? { ...t, unread: false } : t
-      );
-      saveParentThreads(updated);
-      return updated;
-    });
+      )
+    );
   }
 
-  function handleSendMessage(content: string) {
+  async function handleSendMessage(content: string) {
     if (!selectedId) return;
-    setThreads((prev) => {
-      const updated = prev.map((t) => {
+
+    // Optimistic update
+    setThreads((prev) =>
+      prev.map((t) => {
         if (t.consultId !== selectedId) return t;
         return {
           ...t,
@@ -71,20 +60,23 @@ export function MessagesView() {
             },
           ],
         };
-      });
-      saveParentThreads(updated);
-      return updated;
+      })
+    );
+
+    // Persist to DB
+    await sendMessage(selectedId, "parent", content);
+
+    startTransition(() => {
+      router.refresh();
     });
   }
 
-  function handleConfirmSlot(day: string, time: string) {
+  async function handleConfirmSlot(day: string, time: string) {
     if (!selectedId) return;
 
-    confirmConsultTime(selectedId, day, time);
-
-    // Update local thread state
-    setThreads((prev) => {
-      const updated = prev.map((t) => {
+    // Optimistic update
+    setThreads((prev) =>
+      prev.map((t) => {
         if (t.consultId !== selectedId) return t;
         return {
           ...t,
@@ -108,18 +100,16 @@ export function MessagesView() {
             },
           ],
         };
-      });
-      saveParentThreads(updated);
-      return updated;
-    });
-  }
-
-  if (!loaded) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-muted">Loading...</p>
-      </div>
+      })
     );
+
+    // Persist to DB
+    await sendMessage(selectedId, "parent", `${day} at ${time} works great for me!`);
+    await confirmTimeSlot(selectedId, day, time);
+
+    startTransition(() => {
+      router.refresh();
+    });
   }
 
   // Sort threads by last message timestamp (most recent first)
@@ -180,7 +170,11 @@ export function MessagesView() {
               </div>
             ) : (
               <div className="flex min-h-[400px] items-center justify-center rounded-[12px] border border-card-border bg-white">
-                <p className="text-sm text-muted">Select a conversation</p>
+                <p className="text-sm text-muted">
+                  {threads.length === 0
+                    ? "No messages yet — request a consult to start a conversation."
+                    : "Select a conversation"}
+                </p>
               </div>
             )}
           </div>

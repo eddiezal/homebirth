@@ -1,34 +1,35 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Input } from "@/components/ui";
-import { MOCK_EXPIRED_TOKEN } from "@/lib/data/mock-auth";
+import { setPassword as updatePassword, getUser } from "@/lib/supabase/auth";
 import { Suspense } from "react";
 
 function SetPasswordForm() {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [expired, setExpired] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [noSession, setNoSession] = useState(false);
 
   useEffect(() => {
-    // Mock: check for expired token
-    if (token === MOCK_EXPIRED_TOKEN) {
-      setExpired(true);
-      return;
+    async function checkUser() {
+      const user = await getUser();
+      if (user) {
+        setEmail(user.email || "");
+      } else {
+        setNoSession(true);
+      }
     }
-    if (typeof window !== "undefined") {
-      setEmail(sessionStorage.getItem("homebirth_auth_email") || "you@example.com");
-    }
-  }, [token]);
+    checkUser();
+  }, []);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errs: Record<string, string> = {};
 
@@ -44,10 +45,20 @@ function SetPasswordForm() {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
+    setLoading(true);
+    const result = await updatePassword(password);
+
+    if (result?.error) {
+      setErrors({ [result.field || "password"]: result.error });
+      setLoading(false);
+      return;
+    }
+
     setSuccess(true);
+    setLoading(false);
   }
 
-  if (expired) {
+  if (noSession) {
     return (
       <div className="rounded-[12px] border border-card-border bg-white p-8 text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-50">
@@ -111,7 +122,6 @@ function SetPasswordForm() {
 
   return (
     <div className="rounded-[12px] border border-card-border bg-white p-8">
-      {/* Note: In production, this page is gated by a ?token=xxx param from magic link email */}
       <h1 className="text-xl font-semibold text-heading">Set a password</h1>
       <p className="mt-1 text-sm text-muted">
         Optional — you can always sign in with a magic link instead.
@@ -140,12 +150,14 @@ function SetPasswordForm() {
           onChange={(e) => setConfirm(e.target.value)}
           error={errors.confirm}
         />
-        <Button fullWidth>Set password</Button>
+        <Button fullWidth disabled={loading}>
+          {loading ? "Setting password..." : "Set password"}
+        </Button>
       </form>
 
       <div className="mt-4 text-center">
         <Link
-          href="/results"
+          href="/dashboard"
           className="text-sm font-medium text-muted hover:text-heading"
         >
           Skip for now — I&apos;ll keep using magic links

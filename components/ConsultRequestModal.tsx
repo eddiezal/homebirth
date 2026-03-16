@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Modal, Card, Button, Input } from "@/components/ui";
-import { saveConsultRequest } from "@/lib/utils/consult-storage";
+import { submitConsultRequest } from "@/lib/actions/submit-consult";
+import { loadIntakeAnswers } from "@/lib/utils/intake-storage";
 import type { Provider } from "@/lib/types/provider";
 
 interface ConsultRequestModalProps {
@@ -25,6 +26,7 @@ export function ConsultRequestModal({
     phone: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
   function updateField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -54,21 +56,34 @@ export function ConsultRequestModal({
     return Object.keys(errs).length === 0;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
 
-    saveConsultRequest({
-      providerId: provider.id,
-      providerName: provider.name,
-      parentName: form.name,
-      parentEmail: form.email,
-      parentPhone: form.phone,
-      submittedAt: new Date().toISOString(),
-    });
+    setLoading(true);
 
+    // Load intake answers from sessionStorage to persist with the consult
+    const stored = loadIntakeAnswers();
+
+    const result = await submitConsultRequest(
+      provider.id,
+      form.name,
+      form.email,
+      form.phone,
+      provider.matchScore,
+      provider.matchReasons,
+      stored ? { answers: stored.answers, zip: stored.zip } : undefined
+    );
+
+    if (result.error) {
+      setErrors({ [result.field || "email"]: result.error });
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
     onClose();
-    router.push(`/confirmation?provider=${provider.id}`);
+    router.push(`/confirmation?consult=${result.consultId}`);
   }
 
   const initials = provider.name
@@ -143,8 +158,17 @@ export function ConsultRequestModal({
           error={errors.phone}
         />
 
-        <Button fullWidth className="mt-1">
-          Send request
+        {errors.email?.includes("already exists") && (
+          <Link
+            href="/sign-in"
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            Sign in instead
+          </Link>
+        )}
+
+        <Button fullWidth className="mt-1" disabled={loading}>
+          {loading ? "Sending request..." : "Send request"}
         </Button>
       </form>
 

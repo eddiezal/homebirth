@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Container, Button, Tabs, TabPanel, Input, ChipSelect, Textarea, Badge } from "@/components/ui";
-import { mockProviders } from "@/lib/data/mock-providers";
+import type { ProviderEditData } from "@/lib/queries/provider-profile";
+import { updateProviderProfile } from "@/lib/queries/provider-profile";
 import {
   SPECIALTY_OPTIONS,
   VALUES_OPTIONS,
@@ -11,29 +13,49 @@ import {
   PAYMENT_OPTIONS,
 } from "@/lib/types/onboarding";
 
-// Use the first mock provider (Sarah Chen) as the "logged-in" provider's profile
-const provider = mockProviders[0];
+interface ProfileEditViewProps {
+  provider: ProviderEditData;
+}
 
-export function ProfileEditView() {
+export function ProfileEditView({ provider }: ProfileEditViewProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState("about");
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  // Editable fields initialized from mock provider
+  // Editable fields initialized from real provider data
   const [fullName, setFullName] = useState(provider.name);
-  const [tagline, setTagline] = useState(provider.philosophy);
+  const [tagline, setTagline] = useState(provider.tagline);
   const [philosophy, setPhilosophy] = useState(provider.philosophy);
   const [specialties, setSpecialties] = useState<string[]>(provider.specialties);
-  const [values, setValues] = useState<string[]>(provider.tags.filter((t) => VALUES_OPTIONS.includes(t)));
+  const [values, setValues] = useState<string[]>(provider.valuesTags);
   const [birthSettings, setBirthSettings] = useState<string[]>(provider.birthSettings);
-  const [feeRange] = useState(provider.priceRange);
   const [whatsIncluded, setWhatsIncluded] = useState<string[]>(provider.whatsIncluded);
-  const [paymentOptions, setPaymentOptions] = useState<string[]>(
-    provider.slidingScale ? ["Sliding scale"] : []
-  );
+  const [paymentOptions, setPaymentOptions] = useState<string[]>(provider.paymentOptions);
 
-  function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  async function handleSave() {
+    setSaving(true);
+    const result = await updateProviderProfile(provider.id, {
+      name: fullName,
+      tagline,
+      philosophy,
+      specialties,
+      valuesTags: values,
+      birthSettings,
+      whatsIncluded,
+      paymentOptions,
+    });
+
+    setSaving(false);
+
+    if (!result.error) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+      startTransition(() => {
+        router.refresh();
+      });
+    }
   }
 
   const tabs = [
@@ -54,8 +76,8 @@ export function ProfileEditView() {
                 {saved && (
                   <span className="text-sm text-primary">Saved!</span>
                 )}
-                <Button size="sm" onClick={handleSave}>
-                  Save changes
+                <Button size="sm" onClick={handleSave} disabled={saving}>
+                  {saving ? "Saving..." : "Save changes"}
                 </Button>
               </div>
             </div>
@@ -153,7 +175,7 @@ export function ProfileEditView() {
                 <div className="flex flex-col gap-6">
                   <div className="rounded-[8px] bg-gray-50 px-4 py-3">
                     <p className="text-sm text-heading">
-                      Current range: <strong>{feeRange}</strong>
+                      Current range: <strong>{provider.priceRange || "Not set"}</strong>
                     </p>
                   </div>
 
@@ -194,9 +216,13 @@ export function ProfileEditView() {
                       Insurance accepted
                     </label>
                     <div className="mt-2 flex flex-wrap gap-1.5">
-                      {provider.insuranceAccepted.map((ins) => (
-                        <Badge key={ins} variant="gray">{ins}</Badge>
-                      ))}
+                      {provider.insuranceAccepted.length > 0 ? (
+                        provider.insuranceAccepted.map((ins) => (
+                          <Badge key={ins} variant="gray">{ins}</Badge>
+                        ))
+                      ) : (
+                        <p className="text-xs text-muted">None added yet</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -204,7 +230,11 @@ export function ProfileEditView() {
 
               <TabPanel id="verification" activeTab={activeTab}>
                 <div className="flex flex-col gap-4">
-                  {provider.verifications.map((v) => (
+                  {[
+                    { type: "identity" as const, verified: provider.identityVerified, detail: "Government-issued ID verification" },
+                    { type: "license" as const, verified: provider.licenseVerified, detail: "State license/certification check" },
+                    { type: "practice" as const, verified: provider.practiceVerified, detail: "NPI or website URL confirmed" },
+                  ].map((v) => (
                     <div
                       key={v.type}
                       className={`rounded-[12px] border p-4 ${
@@ -230,9 +260,7 @@ export function ProfileEditView() {
                           {v.verified ? "Verified" : "Pending"}
                         </Badge>
                       </div>
-                      {v.detail && (
-                        <p className="mt-2 text-xs text-muted">{v.detail}</p>
-                      )}
+                      <p className="mt-2 text-xs text-muted">{v.detail}</p>
                     </div>
                   ))}
                 </div>
@@ -264,10 +292,10 @@ export function ProfileEditView() {
                 ))}
               </div>
               <p className="mt-3 text-sm font-semibold text-heading">
-                {feeRange}
+                {provider.priceRange || "Price not set"}
               </p>
               <p className="mt-1 text-xs text-muted">
-                {provider.location} · {provider.distance} mi
+                {provider.location}
               </p>
             </div>
           </div>

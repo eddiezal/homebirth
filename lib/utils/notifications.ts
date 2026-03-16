@@ -1,12 +1,4 @@
-import { loadParentThreads, loadParentConsults } from "./parent-storage";
 import type { ConsultCard } from "@/lib/types/parent";
-
-/** Count unread message threads for parent nav badge */
-export function getUnreadMessageCount(): number {
-  const threads = loadParentThreads();
-  if (!threads) return 0;
-  return threads.filter((t) => t.unread).length;
-}
 
 /** Check if a specific consult needs parent action (provider responded with times) */
 export function hasActionNeeded(consult: ConsultCard): boolean {

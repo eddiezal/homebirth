@@ -3,33 +3,36 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Container, Card, Badge, Button } from "@/components/ui";
-import { getProviderById } from "@/lib/data/mock-providers";
-import { loadConsultRequest } from "@/lib/utils/consult-storage";
+import { getConsultById } from "@/lib/queries/consults";
+import type { ConsultRecord } from "@/lib/queries/consults";
 import { StatusTimeline } from "./StatusTimeline";
 import { PrepCard } from "./PrepCard";
-import type { ConsultRequest } from "@/lib/types/consult";
 
 export function ConfirmationView() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const providerId = searchParams.get("provider") || "";
-  const [consult, setConsult] = useState<ConsultRequest | null>(null);
+  const consultId = searchParams.get("consult") || "";
+  const [consult, setConsult] = useState<ConsultRecord | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setConsult(loadConsultRequest());
-    setLoaded(true);
-  }, []);
-
-  const provider = getProviderById(providerId);
+    if (!consultId) {
+      setLoaded(true);
+      return;
+    }
+    getConsultById(consultId).then((data) => {
+      setConsult(data);
+      setLoaded(true);
+    });
+  }, [consultId]);
 
   useEffect(() => {
-    if (loaded && !provider) {
+    if (loaded && !consult) {
       router.replace("/results");
     }
-  }, [loaded, provider, router]);
+  }, [loaded, consult, router]);
 
-  if (!loaded || !provider) {
+  if (!loaded || !consult || !consult.provider) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <p className="text-muted">Loading...</p>
@@ -37,6 +40,7 @@ export function ConfirmationView() {
     );
   }
 
+  const provider = consult.provider;
   const initials = provider.name
     .split(" ")
     .map((n) => n[0])
@@ -45,9 +49,7 @@ export function ConfirmationView() {
   const timelineSteps = [
     {
       label: "Request sent",
-      detail: consult
-        ? `Just now · ${new Date(consult.submittedAt).toLocaleTimeString()}`
-        : "Just now",
+      detail: `Just now · ${new Date(consult.createdAt).toLocaleTimeString()}`,
       completed: true,
     },
     {
@@ -107,7 +109,7 @@ export function ConfirmationView() {
                     <Badge variant="teal">Request sent</Badge>
                   </div>
                   <p className="text-xs text-muted">
-                    {provider.credentials} · {provider.matchScore}% match
+                    {provider.credentials} · {consult.matchScore}% match
                   </p>
                 </div>
               </div>

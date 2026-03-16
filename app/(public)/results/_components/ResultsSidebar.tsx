@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { MapView, providersToMapPins } from "@/components/MapView";
+import type { Provider } from "@/lib/types/provider";
+
 interface ResultsSidebarProps {
   filters: {
     acceptingOnly: boolean;
@@ -10,6 +14,10 @@ interface ResultsSidebarProps {
   onFilterChange: (key: string, value: boolean) => void;
   sortBy: string;
   onSortChange: (value: string) => void;
+  providers?: Provider[];
+  highlightedId?: string | null;
+  onPinHover?: (id: string | null) => void;
+  onPinClick?: (id: string) => void;
 }
 
 export function ResultsSidebar({
@@ -17,31 +25,34 @@ export function ResultsSidebar({
   onFilterChange,
   sortBy,
   onSortChange,
+  providers = [],
+  highlightedId,
+  onPinHover,
+  onPinClick,
 }: ResultsSidebarProps) {
+  // Collapsed by default on mobile per spec, always visible on desktop
+  const [showMap, setShowMap] = useState(false);
+  const pins = providersToMapPins(providers);
+
   return (
     <div className="flex flex-col gap-6">
-      {/* Map placeholder */}
-      <div className="flex h-48 items-center justify-center rounded-[12px] border border-card-border bg-gray-50">
-        <div className="text-center">
-          <svg
-            className="mx-auto h-8 w-8 text-muted"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={1.5}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
-            />
-          </svg>
-          <p className="mt-2 text-xs text-muted">Map coming soon</p>
+      {/* Map — toggleable on mobile, always on desktop */}
+      <div className="lg:block">
+        <button
+          type="button"
+          onClick={() => setShowMap(!showMap)}
+          className="mb-2 text-sm font-medium text-primary hover:underline lg:hidden"
+        >
+          {showMap ? "Hide map" : "Show map"}
+        </button>
+        <div className={`${showMap ? "block" : "hidden"} lg:block`}>
+          <MapView
+            pins={pins}
+            highlightedId={highlightedId}
+            onPinClick={onPinClick}
+            onPinHover={onPinHover}
+            className="h-48"
+          />
         </div>
       </div>
 

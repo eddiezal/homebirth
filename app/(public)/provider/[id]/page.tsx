@@ -1,4 +1,4 @@
-import { getProviderById } from "@/lib/data/mock-providers";
+import { getProviderById } from "@/lib/queries/providers";
 import { ProviderProfileView } from "./_components/ProviderProfileView";
 import { notFound } from "next/navigation";
 
@@ -8,7 +8,7 @@ interface ProviderPageProps {
 
 export default async function ProviderPage({ params }: ProviderPageProps) {
   const { id } = await params;
-  const provider = getProviderById(id);
+  const provider = await getProviderById(id);
   if (!provider) notFound();
   return <ProviderProfileView provider={provider} />;
 }

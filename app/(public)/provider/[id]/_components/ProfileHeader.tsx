@@ -4,9 +4,10 @@ import type { ProviderProfile } from "@/lib/types/provider";
 
 interface ProfileHeaderProps {
   provider: ProviderProfile;
+  isUnclaimed?: boolean;
 }
 
-export function ProfileHeader({ provider }: ProfileHeaderProps) {
+export function ProfileHeader({ provider, isUnclaimed }: ProfileHeaderProps) {
   const initials = provider.name
     .split(" ")
     .map((n) => n[0])
@@ -27,19 +28,22 @@ export function ProfileHeader({ provider }: ProfileHeaderProps) {
         </div>
 
         <p className="mt-1 text-sm text-muted">
-          {provider.location} · {provider.distance} mi ·{" "}
-          {provider.yearsExperience} yrs experience · {provider.birthsAttended}{" "}
-          births
+          {isUnclaimed
+            ? [provider.location, provider.credentials].filter(Boolean).join(" · ") || "Location not available"
+            : `${provider.location} · ${provider.distance} mi · ${provider.yearsExperience} yrs experience · ${provider.birthsAttended} births`
+          }
         </p>
 
         <div className="mt-2 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
-          {provider.acceptingClients ? (
+          {isUnclaimed ? (
+            <Badge variant="amber">Unclaimed profile</Badge>
+          ) : provider.acceptingClients ? (
             <Badge variant="teal">Accepting clients</Badge>
           ) : (
             <Badge variant="amber">Not accepting clients</Badge>
           )}
 
-          {provider.reviewCount > 0 && (
+          {!isUnclaimed && provider.reviewCount > 0 && (
             <div className="flex items-center gap-1.5">
               <StarRating rating={provider.aggregateRating} size="sm" />
               <span className="text-sm font-medium text-heading">

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui";
 import { loadIntakeAnswers } from "@/lib/utils/intake-storage";
-import { mockProviders } from "@/lib/data/mock-providers";
+import { getAllProviders, getDirectoryProviders } from "@/lib/queries/providers";
 import { scoreProviders } from "@/lib/matching/score";
 import { resolveCity } from "../../fork/_components/LocationBadge";
 import type { IntakeAnswers } from "@/lib/types/intake";
@@ -13,6 +13,7 @@ import { ConsultRequestModal } from "@/components/ConsultRequestModal";
 import { ResultsHeader } from "./ResultsHeader";
 import { ProviderCard } from "./ProviderCard";
 import { ResultsSidebar } from "./ResultsSidebar";
+import { DirectoryCard } from "./DirectoryCard";
 
 interface Filters {
   acceptingOnly: boolean;
@@ -34,6 +35,10 @@ export function ResultsList() {
   });
   const [sortBy, setSortBy] = useState("match");
   const [modalProviderId, setModalProviderId] = useState<string | null>(null);
+  const [hoveredProviderId, setHoveredProviderId] = useState<string | null>(null);
+  const [dbProviders, setDbProviders] = useState<Provider[]>([]);
+  const [directoryProviders, setDirectoryProviders] = useState<Provider[]>([]);
+  const [directoryTotal, setDirectoryTotal] = useState(0);
 
   useEffect(() => {
     const stored = loadIntakeAnswers();
@@ -43,12 +48,23 @@ export function ResultsList() {
     }
     setAnswers(stored.answers);
     setZip(stored.zip);
-    setLoaded(true);
+
+    // Fetch matched providers (onboarding complete) + directory providers in parallel
+    const location = resolveCity(stored.zip) ?? "";
+    Promise.all([
+      getAllProviders(),
+      getDirectoryProviders(location, 20),
+    ]).then(([matched, directory]) => {
+      setDbProviders(matched);
+      setDirectoryProviders(directory.providers);
+      setDirectoryTotal(directory.total);
+      setLoaded(true);
+    });
   }, [router]);
 
   const scoredProviders = useMemo(
-    () => scoreProviders(mockProviders, answers),
-    [answers]
+    () => scoreProviders(dbProviders, answers),
+    [dbProviders, answers]
   );
 
   const filteredProviders = useMemo(() => {
@@ -122,11 +138,18 @@ export function ResultsList() {
           {/* Provider cards */}
           <div className="flex min-w-0 flex-1 flex-col gap-6">
             {filteredProviders.map((provider: Provider) => (
-              <ProviderCard
+              <div
                 key={provider.id}
-                provider={provider}
-                onRequestConsult={setModalProviderId}
-              />
+                id={`provider-card-${provider.id}`}
+                onMouseEnter={() => setHoveredProviderId(provider.id)}
+                onMouseLeave={() => setHoveredProviderId(null)}
+              >
+                <ProviderCard
+                  provider={provider}
+                  onRequestConsult={setModalProviderId}
+                  highlighted={hoveredProviderId === provider.id}
+                />
+              </div>
             ))}
 
             {filteredProviders.length === 0 && (
@@ -156,6 +179,45 @@ export function ResultsList() {
                 </button>
               </p>
             )}
+
+            {/* Directory listings — real providers, unclaimed */}
+            {directoryProviders.length > 0 && (
+              <div className="mt-8">
+                <div className="mb-4 border-t border-card-border pt-6">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                    Provider directory
+                  </p>
+                  <h3 className="mt-1 text-lg font-semibold text-heading">
+                    {directoryTotal.toLocaleString()} more providers{location !== "your area" ? ` near ${location}` : ""}
+                  </h3>
+                  <p className="mt-1 text-sm text-muted">
+                    These providers haven&apos;t claimed their profile yet. Basic info only.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-3">
+                  {directoryProviders.map((provider: Provider) => (
+                    <DirectoryCard key={provider.id} provider={provider} />
+                  ))}
+                </div>
+                {directoryTotal > directoryProviders.length && (
+                  <p className="mt-4 text-center text-sm text-muted">
+                    Showing {directoryProviders.length} of {directoryTotal.toLocaleString()} providers.{" "}
+                    <button
+                      type="button"
+                      className="font-medium text-primary hover:underline"
+                      onClick={() => {
+                        const loc = resolveCity(zip) ?? "";
+                        getDirectoryProviders(loc, 50, directoryProviders.length).then((res) => {
+                          setDirectoryProviders((prev) => [...prev, ...res.providers]);
+                        });
+                      }}
+                    >
+                      Load more
+                    </button>
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -165,6 +227,14 @@ export function ResultsList() {
               onFilterChange={handleFilterChange}
               sortBy={sortBy}
               onSortChange={setSortBy}
+              providers={filteredProviders}
+              highlightedId={hoveredProviderId}
+              onPinHover={setHoveredProviderId}
+              onPinClick={(id) => {
+                const el = document.getElementById(`provider-card-${id}`);
+                el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                setHoveredProviderId(id);
+              }}
             />
           </div>
         </div>

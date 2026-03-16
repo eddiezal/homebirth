@@ -136,6 +136,8 @@ export function ProviderProfileView({ provider }: ProviderProfileViewProps) {
   const [hasIntakeSession, setHasIntakeSession] = useState(false);
   const [matchReasons, setMatchReasons] = useState<string[]>(provider.matchReasons);
 
+  const isUnclaimed = !provider.onboardingComplete;
+
   useEffect(() => {
     const stored = loadIntakeAnswers();
     if (stored) {
@@ -173,71 +175,203 @@ export function ProviderProfileView({ provider }: ProviderProfileViewProps) {
           </Link>
         )}
 
+        {/* Unclaimed banner */}
+        {isUnclaimed && (
+          <div className="mt-6 rounded-[12px] border border-amber-200 bg-amber-50 p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-heading">
+                  This profile hasn&apos;t been claimed yet
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  Basic info only. Are you this provider? Claim your profile to add your
+                  philosophy, pricing, availability, and start receiving consult requests.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                href={`/provider-apply?claim=${encodeURIComponent(provider.name)}`}
+                className="shrink-0"
+              >
+                Claim this profile
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mt-6">
-          <ProfileHeader provider={provider} />
+          <ProfileHeader provider={provider} isUnclaimed={isUnclaimed} />
         </div>
 
         {/* Mobile CTA */}
-        <div className="mt-4 lg:hidden">
-          <Button fullWidth onClick={() => setModalOpen(true)}>
-            Request a consult
-          </Button>
-        </div>
+        {!isUnclaimed && (
+          <div className="mt-4 lg:hidden">
+            <Button fullWidth onClick={() => setModalOpen(true)}>
+              Request a consult
+            </Button>
+          </div>
+        )}
 
         {/* Main content */}
         <div className="mt-8 flex flex-col gap-8 lg:flex-row">
           {/* Tabs + content */}
           <div className="min-w-0 flex-1">
-            <div className="sticky top-16 z-10 bg-white/95 backdrop-blur-sm lg:static lg:bg-transparent lg:backdrop-blur-none">
-              <Tabs
-                tabs={profileTabs}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-              />
-            </div>
+            {isUnclaimed ? (
+              /* Simplified view for unclaimed providers */
+              <div className="flex flex-col gap-6">
+                {provider.credentials && (
+                  <section>
+                    <h3 className="text-sm font-semibold text-heading">Credentials</h3>
+                    <p className="mt-2 text-sm text-muted">{provider.credentials}</p>
+                  </section>
+                )}
+                {provider.location && (
+                  <section>
+                    <h3 className="text-sm font-semibold text-heading">Location</h3>
+                    <p className="mt-2 text-sm text-muted">{provider.location}</p>
+                  </section>
+                )}
+                {provider.languages.length > 0 && (
+                  <section>
+                    <h3 className="text-sm font-semibold text-heading">Languages</h3>
+                    <p className="mt-2 text-sm text-muted">{provider.languages.join(", ")}</p>
+                  </section>
+                )}
 
-            <TabPanel id="about" activeTab={activeTab}>
-              <AboutTab provider={provider} />
-            </TabPanel>
-            <TabPanel id="reviews" activeTab={activeTab}>
-              <ReviewsTab provider={provider} />
-            </TabPanel>
-            <TabPanel id="pricing" activeTab={activeTab}>
-              <PricingTab provider={provider} />
-            </TabPanel>
+                <div className="rounded-[12px] border border-card-border bg-gray-50 p-6 text-center">
+                  <p className="text-sm text-muted">
+                    More details like philosophy, pricing, reviews, and availability
+                    will appear once this provider claims their profile.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="sticky top-16 z-10 bg-white/95 backdrop-blur-sm lg:static lg:bg-transparent lg:backdrop-blur-none">
+                  <Tabs
+                    tabs={profileTabs}
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                  />
+                </div>
+
+                <TabPanel id="about" activeTab={activeTab}>
+                  <AboutTab provider={provider} />
+                </TabPanel>
+                <TabPanel id="reviews" activeTab={activeTab}>
+                  <ReviewsTab provider={provider} />
+                </TabPanel>
+                <TabPanel id="pricing" activeTab={activeTab}>
+                  <PricingTab provider={provider} />
+                </TabPanel>
+              </>
+            )}
           </div>
 
-          {/* Sidebar (desktop) */}
-          <div className="hidden w-full shrink-0 lg:sticky lg:top-24 lg:block lg:w-72 lg:self-start">
-            <ProfileSidebar
-              provider={enrichedProvider}
-              onRequestConsult={() => setModalOpen(true)}
-            />
-          </div>
-
-          {/* Sidebar (mobile) */}
-          <div className="lg:hidden">
-            <ProfileSidebar
-              provider={enrichedProvider}
-              onRequestConsult={() => setModalOpen(true)}
-            />
-          </div>
+          {/* Sidebar */}
+          {isUnclaimed ? (
+            /* Claim CTA sidebar for unclaimed providers */
+            <>
+              <div className="hidden w-full shrink-0 lg:sticky lg:top-24 lg:block lg:w-72 lg:self-start">
+                <UnclaimedSidebar providerName={provider.name} />
+              </div>
+              <div className="lg:hidden">
+                <UnclaimedSidebar providerName={provider.name} />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="hidden w-full shrink-0 lg:sticky lg:top-24 lg:block lg:w-72 lg:self-start">
+                <ProfileSidebar
+                  provider={enrichedProvider}
+                  onRequestConsult={() => setModalOpen(true)}
+                />
+              </div>
+              <div className="lg:hidden">
+                <ProfileSidebar
+                  provider={enrichedProvider}
+                  onRequestConsult={() => setModalOpen(true)}
+                />
+              </div>
+            </>
+          )}
         </div>
       </Container>
 
-      {/* Sticky bottom CTA (mobile) */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-card-border bg-white/90 p-4 backdrop-blur-sm lg:hidden">
-        <Button fullWidth onClick={() => setModalOpen(true)}>
-          Request a consult
+      {/* Sticky bottom CTA (mobile) — only for claimed providers */}
+      {!isUnclaimed && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-card-border bg-white/90 p-4 backdrop-blur-sm lg:hidden">
+          <Button fullWidth onClick={() => setModalOpen(true)}>
+            Request a consult
+          </Button>
+        </div>
+      )}
+
+      {!isUnclaimed && (
+        <ConsultRequestModal
+          provider={provider}
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
+    </section>
+  );
+}
+
+function UnclaimedSidebar({ providerName }: { providerName: string }) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="rounded-[12px] border border-primary/20 bg-primary-light p-5">
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+          For providers
+        </p>
+        <h3 className="mt-2 text-base font-semibold text-heading">
+          Is this your practice?
+        </h3>
+        <p className="mt-2 text-sm text-muted">
+          Claim your profile to manage your listing, set your availability,
+          and start receiving consult requests from matched parents.
+        </p>
+        <Button
+          fullWidth
+          className="mt-4"
+          href={`/provider-apply?claim=${encodeURIComponent(providerName)}`}
+        >
+          Claim this profile
         </Button>
       </div>
 
-      <ConsultRequestModal
-        provider={provider}
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-      />
-    </section>
+      <div className="rounded-[12px] border border-card-border p-5">
+        <h3 className="text-sm font-semibold text-heading">What you get</h3>
+        <ul className="mt-3 flex flex-col gap-2.5 text-sm text-muted">
+          <li className="flex items-start gap-2">
+            <svg className="mt-0.5 h-4 w-4 shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            Matched leads from parents in your area
+          </li>
+          <li className="flex items-start gap-2">
+            <svg className="mt-0.5 h-4 w-4 shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            Full profile with philosophy, pricing, and reviews
+          </li>
+          <li className="flex items-start gap-2">
+            <svg className="mt-0.5 h-4 w-4 shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            Verification badges that build trust
+          </li>
+          <li className="flex items-start gap-2">
+            <svg className="mt-0.5 h-4 w-4 shrink-0 text-primary" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            Free during beta
+          </li>
+        </ul>
+      </div>
+    </div>
   );
 }

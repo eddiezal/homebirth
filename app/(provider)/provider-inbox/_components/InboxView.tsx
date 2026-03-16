@@ -1,20 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui";
-import { mockLeads } from "@/lib/data/mock-leads";
 import type { Lead } from "@/lib/types/lead";
+import { sendProviderResponse, declineConsult, sendMessage } from "@/lib/queries/messages";
+import { EmptyProviderInbox } from "@/components/empty-states/EmptyProviderInbox";
 import { LeadList } from "./LeadList";
 import { LeadDetail } from "./LeadDetail";
 
 const FILTER_OPTIONS = ["all", "new", "contacted", "scheduled", "booked"];
 
-export function InboxView() {
+interface InboxViewProps {
+  initialLeads: Lead[];
+}
+
+export function InboxView({ initialLeads }: InboxViewProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [filter, setFilter] = useState("all");
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(
-    mockLeads[0]?.id ?? null
+    initialLeads[0]?.id ?? null
   );
-  const [leads, setLeads] = useState<Lead[]>(mockLeads);
+  const [leads, setLeads] = useState<Lead[]>(initialLeads);
 
   const filteredLeads =
     filter === "all"
@@ -24,12 +32,14 @@ export function InboxView() {
   const selectedLead = leads.find((l) => l.id === selectedLeadId) ?? null;
 
   function handleStatusChange(leadId: string, status: Lead["status"]) {
+    // Optimistic update
     setLeads((prev) =>
       prev.map((l) => (l.id === leadId ? { ...l, status } : l))
     );
   }
 
-  function handleSendMessage(leadId: string, content: string) {
+  async function handleSendMessage(leadId: string, content: string) {
+    // Optimistic update
     setLeads((prev) =>
       prev.map((l) => {
         if (l.id !== leadId) return l;
@@ -48,9 +58,22 @@ export function InboxView() {
         };
       })
     );
+
+    // Persist to DB
+    if (leads.find((l) => l.id === leadId)?.status === "new") {
+      await sendProviderResponse(leadId, content);
+    } else {
+      await sendMessage(leadId, "provider", content);
+    }
+
+    // Revalidate in background
+    startTransition(() => {
+      router.refresh();
+    });
   }
 
-  function handleDecline(leadId: string, reason: string, note: string) {
+  async function handleDecline(leadId: string, reason: string, note: string) {
+    // Optimistic update
     setLeads((prev) =>
       prev.map((l) =>
         l.id === leadId
@@ -58,11 +81,19 @@ export function InboxView() {
           : l
       )
     );
+
     // Select next lead
     const remaining = leads.filter(
       (l) => l.id !== leadId && l.status !== "not-a-fit"
     );
     setSelectedLeadId(remaining[0]?.id ?? null);
+
+    // Persist to DB
+    await declineConsult(leadId, reason, note);
+
+    startTransition(() => {
+      router.refresh();
+    });
   }
 
   return (
@@ -114,11 +145,11 @@ export function InboxView() {
                 onStatusChange={handleStatusChange}
                 onDecline={handleDecline}
               />
+            ) : leads.length === 0 ? (
+              <EmptyProviderInbox />
             ) : (
               <div className="flex min-h-[400px] items-center justify-center rounded-[12px] border border-card-border bg-white">
-                <p className="text-sm text-muted">
-                  Select a lead to view details
-                </p>
+                <p className="text-sm text-muted">Select a lead to view details</p>
               </div>
             )}
           </div>

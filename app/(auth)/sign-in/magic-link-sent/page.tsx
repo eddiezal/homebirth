@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui";
+import { sendMagicLink } from "@/lib/supabase/auth";
 
 export default function MagicLinkSentPage() {
   const [email, setEmail] = useState("");
@@ -22,11 +23,16 @@ export default function MagicLinkSentPage() {
     return () => clearTimeout(timer);
   }, [cooldown]);
 
-  function handleResend() {
+  async function handleResend() {
     if (resendCount >= 2) {
       setRateLimited(true);
       return;
     }
+
+    if (email) {
+      await sendMagicLink(email);
+    }
+
     setResendCount((c) => c + 1);
     setCooldown(30);
   }

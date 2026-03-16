@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Input } from "@/components/ui";
-import { MOCK_ERROR_EMAIL, MOCK_WRONG_PASSWORD } from "@/lib/data/mock-auth";
+import { signInWithPassword, sendMagicLink } from "@/lib/supabase/auth";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -14,6 +14,7 @@ export default function SignInPage() {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [locked, setLocked] = useState(false);
   const [lockMessage, setLockMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   function validateEmail(): boolean {
     if (!email.trim()) {
@@ -27,24 +28,18 @@ export default function SignInPage() {
     return true;
   }
 
-  function handleSignIn(e: React.FormEvent) {
+  async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
 
     if (!validateEmail()) return;
 
-    // Mock: email not found
-    if (email.toLowerCase() === MOCK_ERROR_EMAIL) {
-      setErrors({
-        email:
-          "We don't have an account with that email. Did you mean to find a midwife?",
-      });
-      return;
-    }
+    setLoading(true);
 
     if (password) {
-      // Mock: wrong password
-      if (password === MOCK_WRONG_PASSWORD) {
+      const result = await signInWithPassword(email, password, "/dashboard");
+
+      if (result?.error) {
         const attempts = failedAttempts + 1;
         setFailedAttempts(attempts);
 
@@ -53,40 +48,32 @@ export default function SignInPage() {
           setLockMessage(
             "We sent a sign-in link to your email for security."
           );
+          // Auto-send magic link on lockout
+          await sendMagicLink(email);
+          setLoading(false);
           return;
         }
 
-        setErrors({
-          password: "That password isn't right.",
-        });
+        setErrors({ [result.field || "password"]: result.error });
+        setLoading(false);
         return;
       }
-
-      // Mock: success with password
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem(
-          "homebirth_auth_session",
-          JSON.stringify({ email, name: "Parent User" })
-        );
-      }
-      router.push("/results");
+      // If no error, signInWithPassword redirects via server action
     } else {
       // Email only → magic link
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("homebirth_auth_email", email);
-      }
-      router.push("/sign-in/magic-link-sent");
+      await handleMagicLinkSend();
     }
   }
 
-  function handleMagicLink() {
+  async function handleMagicLinkSend() {
     if (!validateEmail()) return;
 
-    if (email.toLowerCase() === MOCK_ERROR_EMAIL) {
-      setErrors({
-        email:
-          "We don't have an account with that email. Did you mean to find a midwife?",
-      });
+    setLoading(true);
+    const result = await sendMagicLink(email);
+
+    if (result?.error) {
+      setErrors({ [result.field || "email"]: result.error });
+      setLoading(false);
       return;
     }
 
@@ -148,7 +135,7 @@ export default function SignInPage() {
         {errors.password && (
           <button
             type="button"
-            onClick={handleMagicLink}
+            onClick={handleMagicLinkSend}
             className="text-left text-sm font-medium text-primary hover:underline"
           >
             Send me a sign-in link instead
@@ -161,8 +148,8 @@ export default function SignInPage() {
           </div>
         )}
 
-        <Button fullWidth disabled={locked}>
-          Sign in
+        <Button fullWidth disabled={locked || loading}>
+          {loading ? "Signing in..." : "Sign in"}
         </Button>
 
         <div className="flex items-center gap-3">
@@ -175,7 +162,8 @@ export default function SignInPage() {
           variant="outlined"
           fullWidth
           type="button"
-          onClick={handleMagicLink}
+          onClick={handleMagicLinkSend}
+          disabled={loading}
         >
           Send me a sign-in link
         </Button>
