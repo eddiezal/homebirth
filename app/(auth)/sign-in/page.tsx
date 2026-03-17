@@ -59,9 +59,9 @@ export default function SignInPage() {
         return;
       }
 
-      // Redirect client-side after cookies are set
+      // Hard navigate so the server sees the new session cookies
       if (result?.redirectTo) {
-        router.push(result.redirectTo);
+        window.location.href = result.redirectTo;
         return;
       }
     } else {
