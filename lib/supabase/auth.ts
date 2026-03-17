@@ -45,6 +45,7 @@ export async function sendMagicLink(email: string): Promise<AuthResult> {
     email,
     options: {
       shouldCreateUser: false,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
     },
   });
 
