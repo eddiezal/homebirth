@@ -36,32 +36,34 @@ export default function ProviderSignInPage() {
     setLoading(true);
 
     if (password) {
-      const result = await signInWithPassword(email, password, "/provider-dashboard");
-      console.log("[sign-in] result:", JSON.stringify(result));
+      try {
+        console.log("[sign-in] Calling signInWithPassword...");
+        const result = await signInWithPassword(email, password, "/provider-dashboard");
+        console.log("[sign-in] result:", JSON.stringify(result));
 
-      if (result?.error) {
-        const attempts = failedAttempts + 1;
-        setFailedAttempts(attempts);
-        if (attempts >= 3) {
-          setLocked(true);
-          await sendMagicLink(email);
+        if (result?.error) {
+          const attempts = failedAttempts + 1;
+          setFailedAttempts(attempts);
+          if (attempts >= 3) {
+            setLocked(true);
+            await sendMagicLink(email);
+            setLoading(false);
+            return;
+          }
+          setErrors({ [result.field || "password"]: result.error });
           setLoading(false);
           return;
         }
-        setErrors({ [result.field || "password"]: result.error });
+
+        // Hard navigate so the server sees the new session cookies
+        window.location.href = result?.redirectTo || "/provider-dashboard";
+        return;
+      } catch (err) {
+        console.error("[sign-in] Server action threw:", err);
+        setErrors({ email: "Sign-in failed. Please try again." });
         setLoading(false);
         return;
       }
-
-      // Hard navigate so the server sees the new session cookies
-      if (result?.redirectTo) {
-        window.location.href = result.redirectTo;
-        return;
-      }
-
-      // Fallback — if we got here, auth succeeded but redirectTo was lost
-      console.warn("[sign-in] No error and no redirectTo — forcing redirect");
-      window.location.href = "/provider-dashboard";
       return;
     } else {
       await handleMagicLinkSend();
