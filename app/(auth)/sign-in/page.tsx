@@ -58,7 +58,12 @@ export default function SignInPage() {
         setLoading(false);
         return;
       }
-      // If no error, signInWithPassword redirects via server action
+
+      // Redirect client-side after cookies are set
+      if (result?.redirectTo) {
+        router.push(result.redirectTo);
+        return;
+      }
     } else {
       // Email only → magic link
       await handleMagicLinkSend();

@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 export type AuthResult = {
   error?: string;
   field?: string;
+  redirectTo?: string;
 };
 
 /**
@@ -32,7 +33,9 @@ export async function signInWithPassword(
     return { error: error.message, field: "email" };
   }
 
-  redirect(redirectTo);
+  // Return success — let the client handle the redirect so cookies are
+  // flushed to the browser before navigation happens.
+  return { redirectTo };
 }
 
 /**

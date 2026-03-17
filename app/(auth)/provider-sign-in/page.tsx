@@ -51,6 +51,12 @@ export default function ProviderSignInPage() {
         setLoading(false);
         return;
       }
+
+      // Redirect client-side after cookies are set
+      if (result?.redirectTo) {
+        router.push(result.redirectTo);
+        return;
+      }
     } else {
       await handleMagicLinkSend();
     }
