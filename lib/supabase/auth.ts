@@ -254,27 +254,33 @@ export async function getUserProfile() {
 
   if (!user) return null;
 
-  const role = user.user_metadata?.role as string | undefined;
+  const metadataRole = user.user_metadata?.role as string | undefined;
 
-  if (role === "provider") {
+  // Try metadata role first, then fall back to checking both tables
+  // (handles manually created auth users that lack role metadata)
+  if (metadataRole === "provider" || !metadataRole) {
     const { data: provider } = await supabase
       .from("providers")
       .select("id, name")
       .eq("user_id", user.id)
       .single();
 
-    return { user, role: "provider" as const, profile: provider };
+    if (provider) {
+      return { user, role: "provider" as const, profile: provider };
+    }
   }
 
-  if (role === "parent") {
+  if (metadataRole === "parent" || !metadataRole) {
     const { data: parent } = await supabase
       .from("parents")
       .select("id, name, email, phone")
       .eq("user_id", user.id)
       .single();
 
-    return { user, role: "parent" as const, profile: parent };
+    if (parent) {
+      return { user, role: "parent" as const, profile: parent };
+    }
   }
 
-  return { user, role: role || "unknown", profile: null };
+  return { user, role: metadataRole || "unknown", profile: null };
 }
