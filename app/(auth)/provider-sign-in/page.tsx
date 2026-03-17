@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { SectionLabel, Button, Input } from "@/components/ui";
-import { signInWithPassword, sendMagicLink } from "@/lib/supabase/auth";
+import { sendMagicLink } from "@/lib/supabase/auth";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ProviderSignInPage() {
   const router = useRouter();
@@ -36,34 +37,33 @@ export default function ProviderSignInPage() {
     setLoading(true);
 
     if (password) {
-      try {
-        console.log("[sign-in] Calling signInWithPassword...");
-        const result = await signInWithPassword(email, password, "/provider-dashboard");
-        console.log("[sign-in] result:", JSON.stringify(result));
+      // Sign in client-side so the browser stores session cookies directly
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (result?.error) {
-          const attempts = failedAttempts + 1;
-          setFailedAttempts(attempts);
-          if (attempts >= 3) {
-            setLocked(true);
-            await sendMagicLink(email);
-            setLoading(false);
-            return;
-          }
-          setErrors({ [result.field || "password"]: result.error });
+      if (error) {
+        const attempts = failedAttempts + 1;
+        setFailedAttempts(attempts);
+        if (attempts >= 3) {
+          setLocked(true);
+          await sendMagicLink(email);
           setLoading(false);
           return;
         }
-
-        // Hard navigate so the server sees the new session cookies
-        window.location.href = result?.redirectTo || "/provider-dashboard";
-        return;
-      } catch (err) {
-        console.error("[sign-in] Server action threw:", err);
-        setErrors({ email: "Sign-in failed. Please try again." });
+        if (error.message.includes("Invalid login credentials")) {
+          setErrors({ password: "That password isn't right." });
+        } else {
+          setErrors({ email: error.message });
+        }
         setLoading(false);
         return;
       }
+
+      // Hard navigate so the server sees the new session cookies
+      window.location.href = "/provider-dashboard";
       return;
     } else {
       await handleMagicLinkSend();

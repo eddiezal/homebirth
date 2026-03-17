@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Input } from "@/components/ui";
-import { signInWithPassword, sendMagicLink } from "@/lib/supabase/auth";
+import { sendMagicLink } from "@/lib/supabase/auth";
+import { createClient } from "@/lib/supabase/client";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -37,9 +38,14 @@ export default function SignInPage() {
     setLoading(true);
 
     if (password) {
-      const result = await signInWithPassword(email, password, "/dashboard");
+      // Sign in client-side so the browser stores session cookies directly
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      if (result?.error) {
+      if (error) {
         const attempts = failedAttempts + 1;
         setFailedAttempts(attempts);
 
@@ -48,22 +54,23 @@ export default function SignInPage() {
           setLockMessage(
             "We sent a sign-in link to your email for security."
           );
-          // Auto-send magic link on lockout
           await sendMagicLink(email);
           setLoading(false);
           return;
         }
 
-        setErrors({ [result.field || "password"]: result.error });
+        if (error.message.includes("Invalid login credentials")) {
+          setErrors({ password: "That password isn't right." });
+        } else {
+          setErrors({ email: error.message });
+        }
         setLoading(false);
         return;
       }
 
       // Hard navigate so the server sees the new session cookies
-      if (result?.redirectTo) {
-        window.location.href = result.redirectTo;
-        return;
-      }
+      window.location.href = "/dashboard";
+      return;
     } else {
       // Email only → magic link
       await handleMagicLinkSend();
