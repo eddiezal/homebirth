@@ -19,23 +19,32 @@ export async function signInWithPassword(
   password: string,
   redirectTo: string
 ): Promise<AuthResult> {
-  const supabase = await createClient();
+  try {
+    console.log("[signIn] Creating Supabase client...");
+    const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+    console.log("[signIn] Calling supabase.auth.signInWithPassword...");
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  if (error) {
-    if (error.message.includes("Invalid login credentials")) {
-      return { error: "That password isn't right.", field: "password" };
+    console.log("[signIn] Result:", error ? error.message : "success");
+
+    if (error) {
+      if (error.message.includes("Invalid login credentials")) {
+        return { error: "That password isn't right.", field: "password" };
+      }
+      return { error: error.message, field: "email" };
     }
-    return { error: error.message, field: "email" };
-  }
 
-  // Return success — let the client handle the redirect so cookies are
-  // flushed to the browser before navigation happens.
-  return { redirectTo };
+    // Return success — let the client handle the redirect so cookies are
+    // flushed to the browser before navigation happens.
+    return { redirectTo };
+  } catch (err) {
+    console.error("[signIn] Unexpected error:", err);
+    return { error: "Sign-in failed. Please try again.", field: "email" };
+  }
 }
 
 /**
