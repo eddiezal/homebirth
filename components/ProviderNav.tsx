@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Container } from "@/components/ui";
+import { signOut } from "@/lib/supabase/auth";
 
 const providerTabs = [
   { label: "Dashboard", href: "/provider-dashboard" },
@@ -65,6 +66,12 @@ export function ProviderNav({ providerName, newLeadCount }: ProviderNavProps) {
           <span className="hidden text-sm font-medium text-heading sm:block">
             {providerName}
           </span>
+          <button
+            onClick={() => signOut()}
+            className="rounded-[8px] px-3 py-1.5 text-sm text-muted hover:text-heading transition-colors"
+          >
+            Sign out
+          </button>
         </div>
       </Container>
     </nav>
