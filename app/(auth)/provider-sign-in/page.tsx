@@ -37,6 +37,7 @@ export default function ProviderSignInPage() {
 
     if (password) {
       const result = await signInWithPassword(email, password, "/provider-dashboard");
+      console.log("[sign-in] result:", JSON.stringify(result));
 
       if (result?.error) {
         const attempts = failedAttempts + 1;
@@ -57,6 +58,11 @@ export default function ProviderSignInPage() {
         window.location.href = result.redirectTo;
         return;
       }
+
+      // Fallback — if we got here, auth succeeded but redirectTo was lost
+      console.warn("[sign-in] No error and no redirectTo — forcing redirect");
+      window.location.href = "/provider-dashboard";
+      return;
     } else {
       await handleMagicLinkSend();
     }
