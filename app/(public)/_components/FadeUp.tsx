@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ElementType } from "react";
 
 interface FadeUpProps {
   children: React.ReactNode;
   className?: string;
-  as?: keyof JSX.IntrinsicElements;
+  as?: ElementType;
+  id?: string;
 }
 
-export function FadeUp({ children, className = "", as: Tag = "section" }: FadeUpProps) {
+export function FadeUp({ children, className = "", as: Tag = "section", id }: FadeUpProps) {
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -32,9 +33,9 @@ export function FadeUp({ children, className = "", as: Tag = "section" }: FadeUp
   }, []);
 
   return (
-    // @ts-expect-error dynamic tag
     <Tag
       ref={ref}
+      id={id}
       className={`translate-y-7 opacity-0 transition-all duration-700 ease-out ${className}`}
     >
       {children}
