@@ -1,18 +1,62 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary: #1a6b5a;
-  --color-primary-light: #e6f3f0;
-  --color-cta: #111827;
-  --color-heading: #111827;
-  --color-muted: #6b7280;
-  --color-card-border: #e5e7eb;
-  --font-sans: var(--font-sora);
+  /* --- Primary palette (lavender) --- */
+  --color-primary: #8b5fa0;
+  --color-primary-dark: #6b4c7c;
+  --color-primary-hover: #7a5090;
+  --color-primary-darker: #5a3d6b;
+  --color-primary-light: #d4b8e0;
+  --color-primary-lighter: #f5e6f9;
+  --color-primary-bg: #f9f0fc;
+
+  /* --- Warm accents --- */
+  --color-peach: #f0cfc0;
+  --color-peach-light: #fce8d5;
+  --color-pink: #e8a0b8;
+  --color-green: #b8d4a8;
+
+  /* --- Text --- */
+  --color-heading: #3a3535;
+  --color-muted: #7a6e6e;
+  --color-faint: #a89e9e;
+
+  /* --- Surfaces & borders --- */
+  --color-bg: #fffcf8;
+  --color-card-border: #f0e4f5;
+  --color-card-border-hover: #d4b8e0;
+
+  /* --- Legacy aliases (keeps non-homepage pages working) --- */
+  --color-cta: #6b4c7c;
+
+  /* --- Fonts --- */
+  --font-serif: var(--font-fraunces);
+  --font-sans: var(--font-nunito);
+
+  /* --- Animations --- */
+  --animate-float: float 4s ease-in-out infinite;
+  --animate-bounce-slow: bounce-slow 2s ease-in-out infinite;
+  --animate-pulse-gentle: pulse-gentle 2.5s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
 }
 
 body {
-  background: linear-gradient(180deg, #ffffff 0%, #f8f9fb 50%, #f0f2f5 100%);
-  color: #111827;
-  font-family: var(--font-sora), system-ui, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-heading);
+  font-family: var(--font-nunito), system-ui, sans-serif;
   min-height: 100vh;
 }

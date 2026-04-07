@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type ButtonVariant = "primary" | "outlined" | "ghost";
+type ButtonVariant = "primary" | "secondary" | "outlined" | "ghost";
 type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonBaseProps {
@@ -24,9 +24,11 @@ type ButtonProps = ButtonAsButton | ButtonAsLink;
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-cta text-white hover:bg-[#1f2937] active:bg-[#374151]",
+    "bg-primary text-white hover:bg-primary-hover active:bg-primary-dark",
+  secondary:
+    "bg-primary-lighter text-primary-dark hover:bg-[#eddcf5]",
   outlined:
-    "border border-card-border text-heading hover:border-primary hover:text-primary",
+    "border-2 border-card-border text-heading hover:border-primary hover:text-primary",
   ghost: "text-primary font-medium hover:underline",
 };
 
@@ -45,7 +47,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   const classes = [
-    "inline-flex items-center justify-center rounded-[8px] font-medium transition-colors",
+    "inline-flex items-center justify-center rounded-2xl font-bold transition-all",
     variantStyles[variant],
     sizeStyles[size],
     fullWidth ? "w-full" : "",

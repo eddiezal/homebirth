@@ -11,7 +11,7 @@ export function SectionHeading({
 }: SectionHeadingProps) {
   return (
     <Tag
-      className={`text-[2rem] font-semibold tracking-[-0.015em] text-heading ${className}`}
+      className={`font-serif text-[38px] font-semibold leading-[1.2] text-heading ${className}`}
     >
       {children}
     </Tag>

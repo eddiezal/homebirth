@@ -1,18 +1,24 @@
 import { HeroSection } from "./_components/HeroSection";
+import { ScrollIndicator } from "./_components/ScrollIndicator";
 import { StartHereHub } from "./_components/StartHereHub";
-import { QuestionsToAsk } from "./_components/QuestionsToAsk";
 import { HowItWorks } from "./_components/HowItWorks";
+import { QuestionsToAsk } from "./_components/QuestionsToAsk";
+import { Testimonial } from "./_components/Testimonial";
 import { VerificationExplainer } from "./_components/VerificationExplainer";
+import { ProviderCallout } from "./_components/ProviderCallout";
 import { BottomCta } from "./_components/BottomCta";
 
 export default function HomePage() {
   return (
     <>
       <HeroSection />
+      <ScrollIndicator />
       <StartHereHub />
-      <QuestionsToAsk />
       <HowItWorks />
+      <QuestionsToAsk />
+      <Testimonial />
       <VerificationExplainer />
+      <ProviderCallout />
       <BottomCta />
     </>
   );

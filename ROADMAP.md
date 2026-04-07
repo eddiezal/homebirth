@@ -119,14 +119,46 @@ All pages built with real UI, mock data, and sessionStorage persistence:
   - `.gitignore` updated to allow `.env.example`
   - Production build succeeds (`next build` — all routes compile)
 
-**Remaining for go-live (manual steps):**
-- Create Vercel project + add env vars
-- Create Supabase production project (separate from dev)
-- Point domain (homebirth.com) to Vercel
-- Set up Resend account + verify sender domain
-- Add `NEXT_PUBLIC_GOOGLE_MAPS_KEY` for maps
-- Playwright E2E tests (optional pre-launch, can run post-launch)
-- Lighthouse audit
+**Remaining for go-live:**
+
+- [x] Create Vercel project + add env vars
+- [x] Create Supabase production project
+- [x] Add `NEXT_PUBLIC_GOOGLE_MAPS_KEY` for maps
+- [x] Provider sign-in flow (client-side auth fix)
+- [x] Point domain (homebirth.com) → Vercel (A record + CNAME via GoDaddy DNS)
+- [x] Set up Resend account + verify sender domain (verified 2026-03-16)
+- [x] Supabase Auth URL config (Site URL + Redirect URLs set to homebirth.com)
+- [x] Verify Resend email delivery end-to-end (confirmed 2026-03-18)
+- [ ] Review & redesign email templates (HTML/styling polish — in progress)
+- [ ] Smoke test all critical flows on production
+- [ ] Lighthouse audit
+- [ ] Playwright E2E tests (optional, can run post-launch)
+
+---
+
+## SEO — Priority Fixes
+
+### P0: Must-have before launch
+- [ ] **OG tags + Twitter Cards** on root layout (og:title, og:description, og:image, twitter:card) — without this, shared links show nothing on social
+- [ ] **Dynamic metadata on `/provider/[id]`** — `generateMetadata()` with provider name, location, credentials in title/description — these are your most indexable pages
+- [ ] **Add provider profiles to sitemap** — expand `app/sitemap.ts` to query all providers and emit `/provider/[id]` URLs
+- [ ] **OG image** — create branded `public/og-image.png` for social sharing fallback
+
+### P1: High impact, do before or shortly after launch
+- [ ] **JSON-LD: Organization schema** on homepage (name, url, logo, description)
+- [ ] **JSON-LD: LocalBusiness/Provider schema** on `/provider/[id]` (name, credentials, location, rating, review count)
+- [ ] **Canonical URLs** — add `metadataBase` + `alternates.canonical` in root layout, override on dynamic routes
+- [ ] **Page metadata** on remaining public pages: `/fork`, `/intake`, `/results`, `/confirmation`
+- [ ] **Fix heading hierarchy** — ensure h1 → h2 → h3 flow (no skipped levels in StartHereHub, etc.)
+
+### P2: Polish, post-launch
+- [ ] **JSON-LD: FAQPage schema** on `/questions` page (powers Google FAQ rich snippets)
+- [ ] **JSON-LD: Article schema** on individual resource pages
+- [ ] **apple-touch-icon.png** + **manifest.json** for PWA bookmarks
+- [ ] **Dynamic OG images** per provider (use `next/og` / `ImageResponse` for auto-generated social cards)
+- [ ] **BreadcrumbList schema** for navigation hierarchy
+- [ ] **Review/rating structured data** on provider profiles (once review aggregation is live)
+- [ ] **Search Console setup** — submit sitemap, monitor indexation
 
 ---
 

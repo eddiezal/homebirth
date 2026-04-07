@@ -1,60 +1,44 @@
-import { Container, SectionLabel, SectionHeading, Card, Badge, ArrowLink } from "@/components/ui";
+import { Container, SectionLabel, SectionHeading } from "@/components/ui";
+import { FadeUp } from "./FadeUp";
 
 const questions = [
-  {
-    category: "Safety",
-    question: "What's your plan if something unexpected happens during labor?",
-    variant: "teal" as const,
-  },
-  {
-    category: "Trust",
-    question: "How many home births have you attended as primary midwife?",
-    variant: "teal" as const,
-  },
-  {
-    category: "Budget",
-    question: "What's included in your fee, and what costs extra?",
-    variant: "gray" as const,
-  },
-  {
-    category: "Communication",
-    question: "How do you prefer to communicate between appointments?",
-    variant: "gray" as const,
-  },
-  {
-    category: "Values",
-    question: "How do you approach shared decision-making during birth?",
-    variant: "teal" as const,
-  },
-  {
-    category: "Care",
-    question: "What does your postpartum care look like in the first week?",
-    variant: "gray" as const,
-  },
+  { category: "Safety", question: "What's your plan if something unexpected happens?" },
+  { category: "Trust", question: "How many home births have you attended?" },
+  { category: "Budget", question: "What's included in your fee?" },
+  { category: "Comms", question: "How do you communicate between visits?" },
+  { category: "Values", question: "How do you handle shared decision-making?" },
+  { category: "Care", question: "What does postpartum look like in week one?" },
 ];
 
 export function QuestionsToAsk() {
   return (
-    <section className="py-20">
-      <Container>
-        <SectionLabel>Resources</SectionLabel>
-        <SectionHeading className="mt-3">
-          Don&apos;t know what to ask? We&apos;ve got you.
-        </SectionHeading>
+    <FadeUp className="bg-gradient-to-b from-bg to-primary-bg py-20">
+      <Container narrow>
+        <div className="mb-[50px] text-center">
+          <SectionLabel>Questions to ask</SectionLabel>
+          <SectionHeading className="mt-[14px]">
+            Not sure what to ask? Here&apos;s a start.
+          </SectionHeading>
+          <p className="mx-auto mt-[10px] max-w-[520px] text-base leading-relaxed text-muted">
+            Tap any question to learn why it matters.
+          </p>
+        </div>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-wrap justify-center gap-3">
           {questions.map((q) => (
-            <Card key={q.question} padding="p-5">
-              <Badge variant={q.variant}>{q.category}</Badge>
-              <p className="mt-3 font-medium text-heading">{q.question}</p>
-            </Card>
+            <a
+              key={q.question}
+              href="/questions"
+              className="flex items-center gap-[10px] rounded-3xl border-2 border-[#e8d9ee] bg-white px-[22px] py-[13px] text-[15px] text-[#5a4560] transition-all hover:-translate-y-[2px] hover:border-[#c9a8d8] hover:bg-primary-bg"
+            >
+              <span className="shrink-0 rounded-xl bg-primary-lighter px-[10px] py-[3px] text-[11px] font-bold text-primary">
+                {q.category}
+              </span>
+              {q.question}
+            </a>
           ))}
         </div>
-
-        <div className="mt-8">
-          <ArrowLink href="/questions">View full question library</ArrowLink>
-        </div>
       </Container>
-    </section>
+    </FadeUp>
   );
 }

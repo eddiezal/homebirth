@@ -25,56 +25,69 @@ Homebirth.com is a trust-first marketplace and lightweight operating system for 
 
 ---
 
-## Design System — Clean & Modern
+## Design System — Soft & Illustrated
 
-All pages follow the **Clean & Modern** style. This is locked in.
+All pages follow the **Soft & Illustrated** style. This is locked in.
 
-- **Font:** Sora (all weights: 400, 500, 600, 700) — used for both headings and body
-- **Primary accent:** `#1a6b5a` (teal green)
-- **Accent light (backgrounds/badges):** `#e6f3f0`
-- **Dark CTA / primary button:** `#111827` background, `#ffffff` text
-- **Text:** `#111827` (headings/body), `#6b7280` (secondary/muted)
-- **Cards:** `#ffffff` background, `1px solid #e5e7eb` border
-- **Card radius:** `12px`
-- **Button radius:** `8px`
-- **Page background:** Subtle gradient `linear-gradient(180deg, #ffffff 0%, #f8f9fb 50%, #f0f2f5 100%)`
-- **Section labels:** Uppercase, `0.7rem`, `letter-spacing: 0.15em`, color `#1a6b5a`, weight 600
-- **Hero headings:** `3.8rem`, weight 600, `letter-spacing: -0.025em`
-- **Section headings:** `2rem`, weight 600, `letter-spacing: -0.015em`
-- **Max content width:** `1120px`
-- **Links:** Color `#1a6b5a` (teal), no underline by default, underline on hover. Arrow links ("View all →", "Read →") use weight 500. "Back" links ("← Back to matches") use `#6b7280` (muted) + weight 400. Visited state: no color change (stays teal). Active/pressed: darken 10%.
+- **Fonts:** Fraunces (serif, headings/taglines/quotes) + Nunito (sans-serif, body/buttons/nav/labels)
+- **Primary accent:** `#8b5fa0` (lavender)
+- **Primary dark:** `#6b4c7c` (logo, dark accent, nav CTA)
+- **Primary light:** `#d4b8e0` (borders, illustration accents)
+- **Primary lighter:** `#f5e6f9` (badges, card backgrounds, number circles)
+- **Primary bg:** `#f9f0fc` (section backgrounds)
+- **Warm accents:** `#f0cfc0` (peach), `#fce8d5` (peach light), `#e8a0b8` (pink), `#b8d4a8` (green)
+- **Text:** `#3a3535` (headings/body), `#7a6e6e` (secondary/muted), `#a89e9e` (faint/meta)
+- **Cards:** `#ffffff` background, `2px solid #f0e4f5` border, hover border `#d4b8e0`
+- **Card radius:** `22px`
+- **Button radius:** `16px` (standard), `24px` (pills/nav CTA)
+- **Page background:** `#fffcf8` (warm cream)
+- **Section labels:** Uppercase, `13px`, `letter-spacing: 2.5px`, color `#8b5fa0`, weight 700
+- **Hero headings:** Fraunces `48px`, weight 700, line-height 1.18
+- **Section headings:** Fraunces `38px`, weight 600, line-height 1.2
+- **Max content width:** `1200px` (standard), `1000px` (narrow sections)
+- **Links:** Color `#8b5fa0` (lavender), no underline by default, underline on hover. Arrow links use weight 500.
+- **Illustrations:** Pure CSS/SVG — no image dependencies. Lavender + peach + pink palette, floating animation on decorative elements.
+- **Scroll animations:** Fade-up on scroll (IntersectionObserver, threshold 0.12, 0.7s ease transition)
 - **No emojis in production** — mockups use emoji placeholders for avatars/icons; replace with real photos/SVG icons
 
 ---
 
 ## Page-by-Page UX Decisions
 
-### 1. Homepage — Guide First
+### 1. Homepage — Soft & Illustrated, Guide First
 
-The homepage uses the **Guide First** approach: education-led, builds trust before asking for action.
+The homepage uses a **warm, illustrated, guide-first** approach: builds trust through personality and education before asking for action. Pure CSS/SVG illustrations, scroll animations, and conversational copy.
 
 **Section flow (in order):**
 
-1. **Nav** — Logo left, links right: "How it works", "For providers", "Resources", "Sign in" (outlined button)
-2. **Hero** — Large heading + subline + zip code input with "Find my match" button. Decorative teal line above heading. No trust stats with fake numbers at launch — add real numbers once they exist.
-3. **Start Here Hub** — Section label: "New to homebirth?" Heading: "Start here — we'll walk you through it"
-   - One large featured card: "The complete beginner's guide to homebirth" (icon, 8 min read, full-width)
-   - Four smaller cards in 2x2 grid: "Is homebirth right for me?", "Midwife vs. doula — explained", "What does homebirth cost?", "How to evaluate a provider"
-   - Each card: icon, title, short description, "Read →" link, read time
-4. **Questions to Ask** — Section label: "Resources". Heading: "Don't know what to ask? We've got you."
-   - 6 questions in 2-column grid, each with a category tag (Safety, Trust, Budget, Communication, Values, Care)
-   - "View full question library →" link at bottom
-5. **How It Works** — 3 cards: "Share your preferences", "See your matches", "Request a consult"
-   - Each has: step number badge (01/02/03), large faded background number, title, description
-6. **Verification Explainer** — Section label: "Trust & verification". Heading: "Every provider is vetted. Every match is explained."
-   - 3 cards: "Identity verified", "License checked", "Match transparency"
-7. **Bottom CTA** — Card with heading "Ready to find your match?", subline, "Start your match" button
-8. **Footer** — Logo left, links right: "For providers", "Questions to ask", "About", "Privacy", "Terms"
+1. **Nav** — Sticky, blurred background. Logo (Fraunces, lavender-dark) left, links right: "How it works", "For providers", "Resources", "Sign in" (pill button, lavender-dark bg)
+2. **Hero** — Two-column grid: content left, CSS/SVG illustration right
+   - Greeting badge: "Hey, welcome" with smiley icon
+   - H1: "Find a midwife who *truly gets you*" (italic emphasis in lavender)
+   - Subhead: "You shouldn't have to settle for whoever's available. Tell us what you care about, and we'll find someone who cares about the same things."
+   - Zip code input + "Find my match" button
+   - Meta: "Free, no account needed — takes about 2 minutes"
+   - Illustration: Circular scene with house, people, trees, floating hearts/stars/moon/clouds — all CSS/SVG with float animation
+3. **Scroll Indicator** — "explore" text + bouncing chevron, fades out after first scroll
+4. **Guide Section** — Background: lavender-bg. Eyebrow: "Not sure where to begin?" Heading: "Honest answers to the questions you're already asking"
+   - 3 cards in grid: "The beginner's guide", "Questions to ask", "Understanding costs"
+   - Each card: custom SVG icon, title, description, hover lift effect
+5. **How It Works** — Eyebrow: "How it works". Heading: "We do the searching. You do the choosing."
+   - Matching illustration: gradient banner showing You → Match → Midwife flow with animated heart pulse
+   - 3 step cards: "Tell us what matters", "Your matches, explained", "Say hello — they already know you"
+6. **Questions Section** — Gradient background. Eyebrow: "Questions to ask". Heading: "Not sure what to ask? Here's a start."
+   - 6 question bubbles with category tags (Safety, Trust, Budget, Comms, Values, Care), flex-wrap layout
+7. **Testimonial** — Centered card with italic Fraunces quote, author name + location. Placeholder copy — replace with real testimonials when available.
+8. **Trust Section** — Eyebrow: "Safety & trust". Heading: "Every provider is vetted with care"
+   - 3 cards: "Identity verified", "License checked", "Match explained" — custom SVG icons
+9. **Provider Callout** — Horizontal card targeting midwives: "Are you a homebirth provider?" with "Learn more" button
+10. **Final CTA** — Purple gradient banner: "Ready when you are" / "No rush. No pressure. Just a better way to find your midwife." / "Start your match" button
+11. **Footer** — Three-column: brand + tagline ("A softer way to find the person who'll walk beside you through birth."), family links, provider links. Bottom bar: copyright + privacy/terms
+
+**All sections (except hero) use fade-up scroll animation** (IntersectionObserver, threshold 0.12)
 
 **What's NOT on the homepage:**
 - No provider cards / directory preview (roster doesn't exist at launch)
-- No fake testimonials (add real ones later)
-- No "For Providers" feature section (that's a separate page)
 - No stats bar with fabricated numbers
 
 ---

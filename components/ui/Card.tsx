@@ -1,13 +1,14 @@
 interface CardProps {
-  variant?: "default" | "teal";
+  variant?: "default" | "accent" | "teal";
   padding?: string;
   className?: string;
   children: React.ReactNode;
 }
 
 const variantStyles = {
-  default: "bg-white border border-card-border",
-  teal: "bg-primary-light",
+  default: "bg-white border-2 border-card-border",
+  accent: "bg-primary-lighter",
+  teal: "bg-primary-lighter", // legacy alias
 };
 
 export function Card({
@@ -18,7 +19,7 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`rounded-[12px] ${variantStyles[variant]} ${padding} ${className}`}
+      className={`rounded-[22px] ${variantStyles[variant]} ${padding} ${className}`}
     >
       {children}
     </div>

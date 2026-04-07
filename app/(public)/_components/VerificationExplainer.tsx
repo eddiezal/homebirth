@@ -1,13 +1,17 @@
-import { Container, SectionLabel, SectionHeading, Card } from "@/components/ui";
+import { Container, SectionLabel, SectionHeading } from "@/components/ui";
+import { FadeUp } from "./FadeUp";
 
 const verifications = [
   {
     title: "Identity verified",
     description:
-      "Every provider confirms their identity with a government-issued ID before their profile goes live.",
+      "Every provider confirms their identity with government-issued ID before going live.",
     icon: (
-      <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2" />
+      <svg viewBox="0 0 44 44" className="h-11 w-11" aria-hidden="true">
+        <rect x="6" y="10" width="32" height="26" rx="4" fill="#f5e6f9" stroke="#d4b8e0" strokeWidth="2" />
+        <circle cx="22" cy="22" r="6" fill="#d4b8e0" />
+        <path d="M22 18v8M18 22h8" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+        <path d="M14 10V6a8 8 0 0116 0v4" stroke="#d4b8e0" strokeWidth="2" fill="none" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -16,18 +20,23 @@ const verifications = [
     description:
       "We verify professional credentials against state licensing databases so you don't have to.",
     icon: (
-      <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+      <svg viewBox="0 0 44 44" className="h-11 w-11" aria-hidden="true">
+        <path d="M22 4l5 10 11 2-8 8 2 11-10-5-10 5 2-11-8-8 11-2z" fill="#fce8d5" stroke="#f0cfc0" strokeWidth="2" />
+        <circle cx="22" cy="20" r="5" fill="#d4b8e0" />
+        <path d="M20 19l2 2 3-3" stroke="#fff" strokeWidth="1.5" fill="none" strokeLinecap="round" />
       </svg>
     ),
   },
   {
-    title: "Match transparency",
+    title: "Match explained",
     description:
       "Every match comes with an explanation — you'll see exactly why a provider was recommended for you.",
     icon: (
-      <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+      <svg viewBox="0 0 44 44" className="h-11 w-11" aria-hidden="true">
+        <circle cx="22" cy="22" r="16" fill="#f5e6f9" stroke="#d4b8e0" strokeWidth="2" />
+        <circle cx="22" cy="18" r="4" fill="#d4b8e0" />
+        <path d="M16 22s2.5 4 6 4 6-4 6-4" stroke="#d4b8e0" strokeWidth="2" fill="none" strokeLinecap="round" />
+        <line x1="22" y1="28" x2="22" y2="34" stroke="#d4b8e0" strokeWidth="2" strokeLinecap="round" />
       </svg>
     ),
   },
@@ -35,27 +44,32 @@ const verifications = [
 
 export function VerificationExplainer() {
   return (
-    <section className="py-20">
-      <Container>
-        <div className="text-center">
-          <SectionLabel>Trust & verification</SectionLabel>
-          <SectionHeading className="mt-3">
-            Every provider is vetted. Every match is explained.
+    <FadeUp className="py-[70px]">
+      <Container narrow>
+        <div className="mb-[50px] text-center">
+          <SectionLabel>Safety & trust</SectionLabel>
+          <SectionHeading className="mt-[14px]">
+            Every provider is vetted with care
           </SectionHeading>
         </div>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-3">
           {verifications.map((v) => (
-            <Card key={v.title} className="text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-light">
-                {v.icon}
-              </div>
-              <h3 className="mt-4 font-semibold text-heading">{v.title}</h3>
-              <p className="mt-2 text-sm text-muted">{v.description}</p>
-            </Card>
+            <div
+              key={v.title}
+              className="rounded-[20px] border-2 border-card-border bg-white p-8 text-center"
+            >
+              <div className="mb-[14px] flex justify-center">{v.icon}</div>
+              <h3 className="mb-2 text-[17px] font-bold text-heading">
+                {v.title}
+              </h3>
+              <p className="text-sm leading-relaxed text-muted">
+                {v.description}
+              </p>
+            </div>
           ))}
         </div>
       </Container>
-    </section>
+    </FadeUp>
   );
 }

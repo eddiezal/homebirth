@@ -1,44 +1,43 @@
 import Link from "next/link";
-import { Container } from "@/components/ui";
 
 export function Nav() {
   return (
-    <nav className="sticky top-0 z-50 border-b border-card-border bg-white/95 backdrop-blur-sm">
-      <Container className="flex h-16 items-center justify-between">
+    <nav className="sticky top-0 z-50 border-b border-primary/[0.06] bg-bg/[0.92] backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-10">
         <Link
           href="/"
-          className="text-xl font-bold tracking-tight text-primary"
+          className="font-serif text-[26px] font-bold text-primary-dark"
         >
           homebirth
         </Link>
 
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-7">
           <Link
-            href="#how-it-works"
-            className="hidden text-sm font-medium text-heading hover:text-primary sm:block"
+            href="#how"
+            className="hidden text-[15px] font-semibold text-[#6b5a5a] transition-colors hover:text-primary sm:block"
           >
             How it works
           </Link>
           <Link
-            href="/providers"
-            className="hidden text-sm font-medium text-heading hover:text-primary sm:block"
+            href="#providers"
+            className="hidden text-[15px] font-semibold text-[#6b5a5a] transition-colors hover:text-primary sm:block"
           >
             For providers
           </Link>
           <Link
-            href="/resources"
-            className="hidden text-sm font-medium text-heading hover:text-primary sm:block"
+            href="#resources"
+            className="hidden text-[15px] font-semibold text-[#6b5a5a] transition-colors hover:text-primary sm:block"
           >
             Resources
           </Link>
           <Link
             href="/sign-in"
-            className="rounded-[8px] border border-card-border px-4 py-2 text-sm font-medium text-heading transition-colors hover:border-primary hover:text-primary"
+            className="rounded-3xl bg-primary-dark px-[22px] py-[10px] text-sm font-bold text-white transition-colors hover:bg-primary-darker"
           >
             Sign in
           </Link>
         </div>
-      </Container>
+      </div>
     </nav>
   );
 }

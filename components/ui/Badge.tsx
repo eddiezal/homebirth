@@ -1,11 +1,12 @@
 interface BadgeProps {
-  variant?: "teal" | "gray" | "amber" | "blue" | "green" | "red";
+  variant?: "lavender" | "teal" | "gray" | "amber" | "blue" | "green" | "red";
   className?: string;
   children: React.ReactNode;
 }
 
 const variantStyles = {
-  teal: "bg-primary-light text-primary",
+  lavender: "bg-primary-lighter text-primary",
+  teal: "bg-primary-lighter text-primary", // legacy alias
   gray: "bg-gray-100 text-muted",
   amber: "bg-amber-50 text-amber-700",
   blue: "bg-blue-50 text-blue-700",
@@ -14,13 +15,13 @@ const variantStyles = {
 };
 
 export function Badge({
-  variant = "teal",
+  variant = "lavender",
   className = "",
   children,
 }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${variantStyles[variant]} ${className}`}
+      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ${variantStyles[variant]} ${className}`}
     >
       {children}
     </span>
