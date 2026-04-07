@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { HeroIllustration } from "./HeroIllustration";
+import Image from "next/image";
 
 export function HeroSection() {
   const [zip, setZip] = useState("");
@@ -16,8 +16,8 @@ export function HeroSection() {
   }
 
   return (
-    <section className="mx-auto grid min-h-[calc(85vh-60px)] max-w-[1200px] items-center gap-10 px-10 pb-[50px] pt-[70px] sm:grid-cols-2">
-      <div>
+    <section className="relative mx-auto grid max-w-[1400px] items-center gap-6 px-6 pb-[50px] pt-[40px] max-md:pb-0 md:min-h-[calc(100vh-60px)] md:grid-cols-[1fr_1fr] md:px-10 lg:gap-10 lg:px-16">
+      <div className="max-md:text-center">
         <div className="mb-[22px] inline-flex items-center gap-2 rounded-3xl bg-primary-lighter px-[18px] py-2 text-sm font-bold text-primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M12 3C7 3 3 7 3 12s4 9 9 9 9-4 9-9-4-9-9-9z" fill="#f5e6f9" />
@@ -28,11 +28,16 @@ export function HeroSection() {
           Hey, welcome
         </div>
 
-        <h1 className="mb-5 font-serif text-[48px] font-bold leading-[1.18] text-heading max-sm:text-[36px]">
-          Find a midwife who <em className="text-primary">truly gets you</em>
+        <h1 className="mb-4 font-serif text-heading max-md:text-[28px] max-md:leading-[1.2]">
+          <span className="block text-[44px] font-semibold leading-[1.2] tracking-[-0.01em] max-md:text-[28px]">
+            Find a midwife who
+          </span>
+          <span className="block text-[56px] font-bold italic leading-[1.1] tracking-[-0.02em] text-primary max-md:text-[36px]">
+            truly gets you
+          </span>
         </h1>
 
-        <p className="mb-8 max-w-[460px] text-lg leading-[1.7] text-muted">
+        <p className="mb-6 max-w-[460px] text-lg leading-[1.7] text-muted max-md:mx-auto max-md:text-base">
           You shouldn&apos;t have to settle for whoever&apos;s available. Tell
           us what you care about, and we&apos;ll find someone who cares about
           the same things.
@@ -40,7 +45,7 @@ export function HeroSection() {
 
         <form
           onSubmit={handleSubmit}
-          className="mb-[14px] flex gap-[10px] max-sm:justify-center"
+          className="mb-[14px] flex gap-[10px] max-md:flex-col max-md:items-center"
         >
           <input
             type="text"
@@ -50,22 +55,47 @@ export function HeroSection() {
             placeholder="Your zip code"
             value={zip}
             onChange={(e) => setZip(e.target.value.replace(/\D/g, ""))}
-            className="w-[210px] rounded-2xl border-2 border-[#e0d4e4] bg-white px-5 py-[15px] text-base text-heading outline-none transition-colors placeholder:text-muted focus:border-primary"
+            className="w-[210px] rounded-2xl border-2 border-[#e0d4e4] bg-white px-5 py-[15px] text-base text-heading outline-none transition-colors placeholder:text-muted focus:border-primary max-md:w-full max-md:max-w-[300px] max-md:text-center"
           />
           <button
             type="submit"
-            className="rounded-2xl bg-primary px-[30px] py-[15px] text-base font-bold text-white transition-all hover:-translate-y-px hover:bg-primary-hover"
+            className="rounded-2xl bg-primary px-[30px] py-[15px] text-base font-bold text-white transition-all hover:-translate-y-px hover:bg-primary-hover max-md:w-full max-md:max-w-[300px]"
           >
-            Find my match
+            Find my midwife
           </button>
         </form>
 
-        <div className="text-sm text-faint">
+        <div className="mb-6 text-sm text-faint">
           Free, no account needed — takes about 2 minutes
+        </div>
+
+        {/* Trust signal */}
+        <div className="flex items-center gap-3 text-[13px] text-muted max-md:justify-center">
+          <div className="flex -space-x-2">
+            {["#d4b8e0", "#f0cfc0", "#b8d4a8"].map((bg, i) => (
+              <div
+                key={i}
+                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white"
+                style={{ background: bg }}
+              >
+                {["S", "M", "J"][i]}
+              </div>
+            ))}
+          </div>
+          <span>Trusted by families in San Diego</span>
         </div>
       </div>
 
-      <HeroIllustration />
+      <div className="flex items-center justify-center max-md:mt-8">
+        <Image
+          src="/Anticipation and care moments shared (1).png"
+          alt="Illustration of a family receiving care from a midwife at home"
+          width={700}
+          height={700}
+          priority
+          className="h-auto w-full"
+        />
+      </div>
     </section>
   );
 }

@@ -410,6 +410,32 @@ create trigger intakes_updated_at
   for each row execute function public.handle_updated_at();
 
 -- ============================================================
+-- PARENT CHECKLISTS (saved "Questions to Ask" selections)
+-- ============================================================
+create table if not exists public.parent_checklists (
+  id uuid primary key default gen_random_uuid(),
+  parent_id uuid not null references public.parents(id) on delete cascade,
+  question_ids text[] not null default '{}',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint parent_checklists_parent_id_key unique (parent_id)
+);
+
+alter table public.parent_checklists enable row level security;
+
+create policy "Parents can read own checklist"
+  on public.parent_checklists for select
+  using (parent_id in (select id from public.parents where user_id = auth.uid()));
+
+create policy "Parents can update own checklist"
+  on public.parent_checklists for update
+  using (parent_id in (select id from public.parents where user_id = auth.uid()));
+
+create trigger parent_checklists_updated_at
+  before update on public.parent_checklists
+  for each row execute function public.handle_updated_at();
+
+-- ============================================================
 -- REALTIME (enable for live updates)
 -- ============================================================
 alter publication supabase_realtime add table public.messages;

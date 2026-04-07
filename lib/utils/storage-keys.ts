@@ -19,6 +19,9 @@ export const STORAGE_KEYS = {
   PARENT_SESSION: "hb_parent_session",
   PARENT_CONSULTS: "hb_parent_consults",
   PARENT_THREADS: "hb_parent_threads",
+
+  // Checklist
+  CHECKLIST: "homebirth_checklist",
 } as const;
 
 /** Clear all homebirth sessionStorage keys. Useful for testing. */

@@ -13,22 +13,28 @@ export function Nav() {
 
         <div className="flex items-center gap-7">
           <Link
-            href="#how"
+            href="/#how"
             className="hidden text-[15px] font-semibold text-[#6b5a5a] transition-colors hover:text-primary sm:block"
           >
             How it works
           </Link>
           <Link
-            href="#providers"
+            href="/providers"
             className="hidden text-[15px] font-semibold text-[#6b5a5a] transition-colors hover:text-primary sm:block"
           >
             For providers
           </Link>
           <Link
-            href="#resources"
+            href="/resources"
             className="hidden text-[15px] font-semibold text-[#6b5a5a] transition-colors hover:text-primary sm:block"
           >
             Resources
+          </Link>
+          <Link
+            href="/about"
+            className="hidden text-[15px] font-semibold text-[#6b5a5a] transition-colors hover:text-primary sm:block"
+          >
+            Our story
           </Link>
           <Link
             href="/sign-in"

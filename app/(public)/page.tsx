@@ -6,6 +6,7 @@ import { QuestionsToAsk } from "./_components/QuestionsToAsk";
 import { Testimonial } from "./_components/Testimonial";
 import { VerificationExplainer } from "./_components/VerificationExplainer";
 import { ProviderCallout } from "./_components/ProviderCallout";
+import { FoundersSnippet } from "./_components/FoundersSnippet";
 import { BottomCta } from "./_components/BottomCta";
 
 export default function HomePage() {
@@ -19,6 +20,7 @@ export default function HomePage() {
       <Testimonial />
       <VerificationExplainer />
       <ProviderCallout />
+      <FoundersSnippet />
       <BottomCta />
     </>
   );
