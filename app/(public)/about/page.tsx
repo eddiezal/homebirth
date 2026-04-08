@@ -1,7 +1,7 @@
 import { Container, SectionLabel, Button } from "@/components/ui";
 
 export const metadata = {
-  title: "Our Story — Homebirth.com",
+  title: "Our Story | Homebirth.com",
   description:
     "Two births. Two countries. One question that wouldn't go away: why is it this hard to find someone you trust?",
 };
@@ -39,7 +39,7 @@ function PullQuote({
       </p>
       {attribution && (
         <p className="mt-4 text-[14px] font-semibold text-primary">
-          — {attribution}
+          &ndash; {attribution}
         </p>
       )}
     </div>
@@ -70,7 +70,7 @@ export default function AboutPage() {
             <span className="text-primary">Our births did.</span>
           </h1>
           <p className="mx-auto mt-6 max-w-[560px] text-[17px] leading-relaxed text-muted">
-            We&apos;re Eddie and Jocelyne Zaldivar — parents, partners, and the
+            We&apos;re Eddie and Jocelyne Zaldivar: parents, partners, and the
             people behind Homebirth.com. This is how two births, two countries,
             and one stubborn question turned into something we couldn&apos;t stop
             building.
@@ -83,7 +83,7 @@ export default function AboutPage() {
             <Avatar initials="JZ" bg="#f0cfc0" />
           </div>
           <p className="mt-4 text-[14px] text-faint">
-            Eddie &amp; Jocelyne Zaldivar — San Diego, CA
+            Eddie &amp; Jocelyne Zaldivar, San Diego, CA
           </p>
         </Container>
       </section>
@@ -91,7 +91,7 @@ export default function AboutPage() {
       {/* ── Act 1: Marie's birth ─────────────────────────── */}
       <section className="py-16">
         <Container className="max-w-[720px]">
-          <YearMarker year="2019" />
+          <YearMarker year="2018" />
 
           <h2 className="font-serif text-[28px] font-semibold leading-tight text-heading sm:text-[32px]">
             The birth that changed everything
@@ -101,36 +101,37 @@ export default function AboutPage() {
             <p>
               When Jo found out she was pregnant with our daughter Marie, we were
               in the middle of planning our wedding. We did what most people
-              do — we moved the wedding up, found an OB, and figured we&apos;d
+              do: we moved the wedding up, found an OB, and figured we&apos;d
               follow the standard path. Hospital birth, epidural on standby,
               check the boxes.
             </p>
 
             <p>
               But something didn&apos;t sit right. The appointments felt rushed. The
-              questions we had — about how labor would actually be managed, about
+              questions we had, about how labor would actually be managed, about
               who&apos;d be in the room, about what would happen if things went
-              sideways — kept getting half-answered. We started looking into
-              alternatives and found a birth center in Miami that felt completely
+              sideways, kept getting half-answered. We started looking into
+              alternatives and found a birth center in Knoxville that felt completely
               different. The midwives there actually listened. They had time for us.
               For the first time, it felt like someone was building a plan{" "}
               <em>with</em> us instead of <em>for</em> us.
             </p>
 
             <p>
-              Then, three months before Jo&apos;s due date, the birth center closed.
+              Then, at 24 weeks, the birth center shut down.
             </p>
 
             <p>
-              We were scrambling. We had no backup. We didn&apos;t even know home
-              birth was an option — nobody had ever mentioned it. But once we
-              started researching, we found a midwife who felt right. She came to
-              our home for the first visit, sat on our couch, and spent two hours
-              answering every question we had. No clock running. No rush.
+              We were scrambling. We had no backup. Our only options were the
+              hospital or a homebirth, something we&apos;d never even considered.
+              But once we started researching, we found a midwife who felt right.
+              She came to our home for the first visit, sat on our couch, and
+              spent two hours answering every question we had. No clock running.
+              No rush.
             </p>
 
             <p>
-              Marie was born at home in North Miami, surrounded by our midwife,
+              Marie was born at home in Knoxville, surrounded by our midwife,
               Jo&apos;s parents, and me. It was the most intense and the most
               peaceful thing I&apos;ve ever been part of. Jo labored in our living
               room, moved freely, made every decision on her terms. When Marie
@@ -140,7 +141,7 @@ export default function AboutPage() {
           </div>
 
           <PullQuote attribution="Jo Zaldivar">
-            I didn&apos;t know I could have this. Not just the home birth — the
+            I didn&apos;t know I could have this. Not just the home birth, but the
             feeling of being completely in charge of my own experience. I keep
             thinking about all the women who don&apos;t know this option exists.
           </PullQuote>
@@ -149,9 +150,14 @@ export default function AboutPage() {
             <p>
               After Marie was born, we couldn&apos;t stop talking about it. Not just
               the birth itself, but how hard it had been to even{" "}
-              <em>discover</em> that this was possible. We had to lose our birth
-              center to find home birth. That felt backwards. Why was the best
+              <em>discover</em> that this was possible. We never planned on a
+              homebirth. We never would have found it if our birth center
+              hadn&apos;t closed. That felt backwards. Why was the best
               experience we&apos;d ever had the hardest one to find?
+            </p>
+
+            <p>
+              In 2019, we bought homebirth.com.
             </p>
           </div>
         </Container>
@@ -168,7 +174,7 @@ export default function AboutPage() {
 
           <div className="mt-8 space-y-5 text-[16px] leading-[1.75] text-muted">
             <p>
-              During Covid, we did what a lot of people were doing — we went
+              During Covid, we did what a lot of people were doing: we went
               remote. Six months as digital nomads in Costa Rica. It was
               incredible. And then Jo got pregnant again.
             </p>
@@ -189,12 +195,12 @@ export default function AboutPage() {
 
             <p>
               Our midwife for Nikola&apos;s birth specialized in serving Jewish
-              families. We&apos;re not Jewish — but she was wonderful, and
+              families. We&apos;re not Jewish, but she was wonderful, and
               working with her opened our eyes to something we hadn&apos;t fully
               understood before: families come to home birth for so many
               different reasons. For some it&apos;s religious or cultural
               tradition. For others it&apos;s autonomy and privacy. And for Black
-              families in particular, it can be a matter of survival — maternal
+              families in particular, it can be a matter of survival. Maternal
               mortality rates for Black women in the U.S. are significantly
               higher in hospital settings, and home birth with a trusted provider
               is one of the ways communities are taking that power back.
@@ -202,16 +208,26 @@ export default function AboutPage() {
 
             <p>
               Nikola was born in 2022 in Miami. Another beautiful birth. But
-              this time the experience left us with something bigger than
-              gratitude. We saw how many different communities need better access
-              to this care — and how broken the discovery process is for all
-              of them. The problem wasn&apos;t Miami. It wasn&apos;t Costa Rica.
-              It was everywhere, for everyone.
+              something caught us off guard: our midwife was very hands-off.
+              With Marie, our midwife had been deeply hands-on throughout
+              labor. Both were great experiences, but the difference in care
+              style surprised us. We never thought to ask. It never occurred to
+              us that two midwives could approach the same moment so differently.
+            </p>
+
+            <p>
+              That realization, on top of everything else, left us with something
+              bigger than gratitude. We saw how many different communities need
+              better access to this care, and how broken the discovery process is
+              for all of them. The problem wasn&apos;t Miami. It wasn&apos;t
+              Costa Rica. It was everywhere, for everyone. And it wasn&apos;t
+              just about finding <em>a</em> midwife. It was about finding the{" "}
+              <em>right</em> one.
             </p>
           </div>
 
           <PullQuote attribution="Eddie Zaldivar">
-            We kept running into the same wall — not a lack of great midwives,
+            We kept running into the same wall: not a lack of great midwives,
             but a lack of any real way to find them. And once we saw how many
             different families need this for how many different reasons, we
             couldn&apos;t unsee it.
@@ -231,12 +247,12 @@ export default function AboutPage() {
               Homebirth.com isn&apos;t a directory. It&apos;s not a listing site
               where providers pay to show up first. It&apos;s a matching system
               built on the idea that the right midwife for you isn&apos;t
-              necessarily the closest one or the cheapest one — it&apos;s the one
+              necessarily the closest one or the cheapest one. It&apos;s the one
               who aligns with how you want to experience birth.
             </p>
 
             <p>
-              Parents answer a short intake about what matters to them — care
+              Parents answer a short intake about what matters to them: care
               style, communication, values, budget, birth setting. Providers
               answer the mirror version from their side. Our matching engine
               connects the two based on real compatibility, then explains{" "}
@@ -286,7 +302,7 @@ export default function AboutPage() {
                 <p>
                   I&apos;m a product builder and founder based in San Diego. My
                   work sits at the intersection of technology, human behavior,
-                  and real-world care — building systems that help people make
+                  and real-world care, building systems that help people make
                   better decisions in moments that matter.
                 </p>
                 <p>
@@ -302,7 +318,7 @@ export default function AboutPage() {
                   , where I partner with teams on strategy, data, and product
                   development. Homebirth.com grew out of the same belief that
                   drives all my work: when the right structure is in place,
-                  people don&apos;t just perform better — they feel more
+                  people don&apos;t just perform better. They feel more
                   supported, more understood, and more confident in the choices
                   they make.
                 </p>
@@ -322,7 +338,7 @@ export default function AboutPage() {
               </div>
               <div className="mt-6 space-y-4 text-[15px] leading-relaxed text-muted">
                 <p>
-                  I&apos;m a licensed social worker — I work with a private
+                  I&apos;m a licensed social worker. I work with a private
                   hospice company, supporting families through some of the most
                   vulnerable moments of their lives. That work has shaped
                   everything about how I think about trust, care, and what it
@@ -331,7 +347,7 @@ export default function AboutPage() {
                 <p>
                   Birth is one of those moments. I know firsthand how much it
                   matters to feel seen and heard by the person guiding you through
-                  it. I bring the care perspective — the emotional intelligence,
+                  it. I bring the care perspective: the emotional intelligence,
                   the parent experience, and the stubbornness to make sure this
                   platform always puts families first.
                 </p>
@@ -351,8 +367,8 @@ export default function AboutPage() {
                 For parents
               </h3>
               <p className="mt-3 text-[15px] leading-relaxed text-muted">
-                If any of this sounds like your story — the uncertainty, the
-                googling, the not knowing where to start — we built this for you.
+                If any of this sounds like your story, the uncertainty, the
+                googling, the not knowing where to start, we built this for you.
                 No account needed. Takes about two minutes.
               </p>
               <Button href="/intake" size="md" className="mt-6">
@@ -367,7 +383,7 @@ export default function AboutPage() {
               </h3>
               <p className="mt-3 text-[15px] leading-relaxed text-muted">
                 We&apos;re not here to send you random leads. We&apos;re here to
-                send you the right families — the ones whose needs actually
+                send you the right families, the ones whose needs actually
                 match your practice. Free during beta.
               </p>
               <Button
