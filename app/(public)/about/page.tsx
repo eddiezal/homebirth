@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Container, SectionLabel, Button } from "@/components/ui";
 
 export const metadata = {
@@ -6,14 +7,29 @@ export const metadata = {
     "Two births. Two countries. One question that wouldn't go away: why is it this hard to find someone you trust?",
 };
 
-/* ─── Placeholder avatar (initials in a colored circle) ──── */
+/* ─── Avatar: photo if src provided, initials fallback ───── */
 function Avatar({
   initials,
   bg,
+  src,
+  alt,
 }: {
   initials: string;
   bg: string;
+  src?: string;
+  alt?: string;
 }) {
+  if (src) {
+    return (
+      <Image
+        src={src}
+        alt={alt || initials}
+        width={128}
+        height={128}
+        className="h-28 w-28 rounded-full object-cover shadow-md sm:h-32 sm:w-32"
+      />
+    );
+  }
   return (
     <div
       className="flex h-28 w-28 items-center justify-center rounded-full text-2xl font-bold text-white shadow-md sm:h-32 sm:w-32"
@@ -80,7 +96,7 @@ export default function AboutPage() {
           <div className="mt-10 flex items-center justify-center gap-6">
             {/* Replace with real photos */}
             <Avatar initials="EZ" bg="#8b5fa0" />
-            <Avatar initials="JZ" bg="#f0cfc0" />
+            <Avatar initials="JZ" bg="#f0cfc0" src="/jo-binoc2.jpg" alt="Jocelyne Zaldivar" />
           </div>
           <p className="mt-4 text-[14px] text-faint">
             Eddie &amp; Jocelyne Zaldivar, San Diego, CA
@@ -328,7 +344,7 @@ export default function AboutPage() {
             {/* Jo */}
             <div className="rounded-[22px] border-2 border-card-border p-8">
               <div className="flex items-center gap-4">
-                <Avatar initials="JZ" bg="#f0cfc0" />
+                <Avatar initials="JZ" bg="#f0cfc0" src="/jo-binoc2.jpg" alt="Jocelyne Zaldivar" />
                 <div>
                   <h3 className="font-serif text-[20px] font-semibold text-heading">
                     Jocelyne Zaldivar
