@@ -79,32 +79,37 @@ export default function AboutPage() {
     <>
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="border-b border-card-border bg-white py-20">
-        <Container className="max-w-[780px] text-center">
-          <SectionLabel>Our story</SectionLabel>
-          <h1 className="mt-4 font-serif text-[2.2rem] font-bold leading-[1.15] tracking-[-0.02em] text-heading sm:text-[2.8rem]">
-            We didn&apos;t plan to build this.{" "}
-            <span className="text-primary">Our births did.</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-[560px] text-[17px] leading-relaxed text-muted">
-            We&apos;re Eddie and Jocelyne Zaldivar: parents, partners, and the
-            people behind Homebirth.com. This is how two births, two countries,
-            and one stubborn question turned into something we couldn&apos;t stop
-            building.
-          </p>
+        <Container className="max-w-[820px]">
+          <div className="grid items-center gap-10 sm:grid-cols-[1fr_auto] sm:gap-12">
+            {/* Left: text */}
+            <div>
+              <SectionLabel>Our story</SectionLabel>
+              <h1 className="mt-4 font-serif text-[2.2rem] font-bold leading-[1.15] tracking-[-0.02em] text-heading sm:text-[2.8rem]">
+                We didn&apos;t plan to build this.{" "}
+                <span className="text-primary">Our births did.</span>
+              </h1>
+              <p className="mt-6 text-[17px] leading-relaxed text-muted">
+                We&apos;re Eddie and Jocelyne Zaldivar: parents, partners, and
+                the people behind Homebirth.com. This is how two births, two
+                countries, and one stubborn question turned into something we
+                couldn&apos;t stop building.
+              </p>
+            </div>
 
-          {/* Family photo */}
-          <div className="mt-10 flex justify-center">
-            <Image
-              src="/Family shot.jpg"
-              alt="The Zaldivar family: Eddie, Jocelyne, Marie, and Nikola"
-              width={420}
-              height={560}
-              className="w-[280px] rounded-[22px] object-cover shadow-lg sm:w-[340px]"
-            />
+            {/* Right: family photo */}
+            <div className="flex flex-col items-center">
+              <Image
+                src="/Family shot.jpg"
+                alt="The Zaldivar family: Eddie, Jocelyne, Marie, and Nikola"
+                width={420}
+                height={560}
+                className="w-[260px] rounded-[22px] object-cover shadow-lg sm:w-[300px]"
+              />
+              <p className="mt-3 text-[13px] text-faint">
+                The Zaldivar family, San Diego, CA
+              </p>
+            </div>
           </div>
-          <p className="mt-4 text-[14px] text-faint">
-            The Zaldivar family, San Diego, CA
-          </p>
         </Container>
       </section>
 

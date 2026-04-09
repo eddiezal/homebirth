@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 export function Nav() {
   return (
@@ -9,7 +8,6 @@ export function Nav() {
           href="/"
           className="flex items-center gap-2.5"
         >
-          <Image src="/logo.svg" alt="" width={32} height={32} />
           <span className="font-serif text-[24px] font-bold text-primary-dark">
             homebirth
           </span>
