@@ -92,14 +92,18 @@ export default function AboutPage() {
             building.
           </p>
 
-          {/* Founder avatars */}
-          <div className="mt-10 flex items-center justify-center gap-6">
-            {/* Replace with real photos */}
-            <Avatar initials="EZ" bg="#8b5fa0" />
-            <Avatar initials="JZ" bg="#f0cfc0" src="/jo-binoc2.jpg" alt="Jocelyne Zaldivar" />
+          {/* Family photo */}
+          <div className="mt-10 flex justify-center">
+            <Image
+              src="/Family shot.jpg"
+              alt="The Zaldivar family: Eddie, Jocelyne, Marie, and Nikola"
+              width={420}
+              height={560}
+              className="w-[280px] rounded-[22px] object-cover shadow-lg sm:w-[340px]"
+            />
           </div>
           <p className="mt-4 text-[14px] text-faint">
-            Eddie &amp; Jocelyne Zaldivar, San Diego, CA
+            The Zaldivar family, San Diego, CA
           </p>
         </Container>
       </section>
@@ -296,7 +300,7 @@ export default function AboutPage() {
             {/* Eddie */}
             <div className="rounded-[22px] border-2 border-card-border p-8">
               <div className="flex items-center gap-4">
-                <Avatar initials="EZ" bg="#8b5fa0" />
+                <Avatar initials="EZ" bg="#8b5fa0" src="/eddie.jpg" alt="Eddie Zaldivar" />
                 <div>
                   <h3 className="font-serif text-[20px] font-semibold text-heading">
                     Eddie Zaldivar

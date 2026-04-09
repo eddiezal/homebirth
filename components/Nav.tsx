@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export function Nav() {
   return (
@@ -6,9 +7,12 @@ export function Nav() {
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-10">
         <Link
           href="/"
-          className="font-serif text-[26px] font-bold text-primary-dark"
+          className="flex items-center gap-2.5"
         >
-          homebirth
+          <Image src="/logo.svg" alt="" width={32} height={32} />
+          <span className="font-serif text-[24px] font-bold text-primary-dark">
+            homebirth
+          </span>
         </Link>
 
         <div className="flex items-center gap-7">

@@ -24,6 +24,12 @@ export const metadata: Metadata = {
   },
   description:
     "Connect with vetted midwives and doulas who match your preferences. Guided intake, explainable matching, and transparent provider profiles.",
+  icons: {
+    icon: [
+      { url: "/logo.svg", type: "image/svg+xml" },
+    ],
+    apple: "/logo.svg",
+  },
   openGraph: {
     type: "website",
     siteName: "Homebirth.com",
@@ -33,7 +39,7 @@ export const metadata: Metadata = {
     url: "https://homebirth.com",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.svg",
         width: 1200,
         height: 630,
         alt: "Homebirth.com — Find your homebirth provider match",
@@ -45,7 +51,7 @@ export const metadata: Metadata = {
     title: "Homebirth.com — Find Your Homebirth Provider Match",
     description:
       "Connect with vetted midwives and doulas who match your preferences. Guided intake, explainable matching, and transparent provider profiles.",
-    images: ["/og-image.png"],
+    images: ["/og-image.svg"],
   },
   alternates: {
     canonical: "https://homebirth.com",
