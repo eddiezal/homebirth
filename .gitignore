@@ -42,3 +42,6 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# outreach data (scraped PII, outreach logs, email drafts)
+/outreach/
