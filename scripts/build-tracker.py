@@ -26,7 +26,10 @@ from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
 ROOT = Path(__file__).resolve().parents[1]
-INPUT = ROOT / "outreach" / "calm-enriched.json"
+# Prefer the combined pool (CALM + Supabase + future sources) if it exists,
+# fall back to the raw CALM roster for backwards compatibility.
+COMBINED_INPUT = ROOT / "outreach" / "combined-targets.json"
+CALM_INPUT = ROOT / "outreach" / "calm-enriched.json"
 OUTPUT = ROOT / "outreach" / "Midwife-Tracker.xlsx"
 
 # Design tokens lifted from the Homebirth Soft & Illustrated palette,
@@ -49,67 +52,91 @@ thin_border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
 
 def load_targets():
-    data = json.loads(INPUT.read_text(encoding="utf-8"))
-    socal = [m for m in data if m.get("is_socal")]
-    rows = []
-    for m in socal:
-        f = m.get("fields") or {}
-        first = f.get("First name") or (m["name"].split(" ", 1)[0] if m.get("name") else "")
-        last = f.get("Last name") or (m["name"].split(" ", 1)[1] if m.get("name") and " " in m["name"] else "")
-        organization = f.get("Organization") or m.get("practice") or ""
-        email = f.get("e-Mail") or m.get("email") or ""
-        phone = f.get("Phone") or m.get("phone") or ""
-        license_type = f.get("California Midwifery License Type") or ""
-        license_no = f.get("License Number") or ""
-        city = f.get("City") or ""
-        counties_raw = f.get("Counties Served") or m.get("counties_served") or ""
-        medi_cal = f.get("Medi-Cal") or m.get("medi_cal") or ""
-        web = f.get("Web Address") or m.get("website") or ""
-        practice_details = f.get("Practice Details") or ""
+    # Prefer combined-targets.json when it exists. It already carries source
+    # and tier and is pre-normalized by dedupe-calm-vs-supabase.mjs.
+    if COMBINED_INPUT.exists():
+        rows = json.loads(COMBINED_INPUT.read_text(encoding="utf-8"))
+        # combined-targets.json rows already have the right shape. Backfill
+        # defaults for any fields the dedupe script did not populate.
+        for r in rows:
+            r.setdefault("source", "Unknown")
+            r.setdefault("tier", 3)
+            r.setdefault("notes", "")
+            r.setdefault("profile_url", "")
+            r.setdefault("practice_details", "")
+            r.setdefault("counties_all", r.get("primary_county") or "")
+    else:
+        # Legacy path: build from CALM only
+        data = json.loads(CALM_INPUT.read_text(encoding="utf-8"))
+        socal = [m for m in data if m.get("is_socal")]
+        rows = []
+        for m in socal:
+            f = m.get("fields") or {}
+            first = f.get("First name") or (m["name"].split(" ", 1)[0] if m.get("name") else "")
+            last = f.get("Last name") or (m["name"].split(" ", 1)[1] if m.get("name") and " " in m["name"] else "")
+            organization = f.get("Organization") or m.get("practice") or ""
+            email = f.get("e-Mail") or m.get("email") or ""
+            phone = f.get("Phone") or m.get("phone") or ""
+            license_type = f.get("California Midwifery License Type") or ""
+            license_no = f.get("License Number") or ""
+            city = f.get("City") or ""
+            counties_raw = f.get("Counties Served") or m.get("counties_served") or ""
+            medi_cal = f.get("Medi-Cal") or m.get("medi_cal") or ""
+            web = f.get("Web Address") or m.get("website") or ""
+            practice_details = f.get("Practice Details") or ""
+            counties_list = m.get("county_list") or []
+            primary_county = counties_list[0] if counties_list else ""
 
-        counties_list = m.get("county_list") or []
-        primary_county = counties_list[0] if counties_list else ""
+            tier = 1 if email else (2 if web else 3)
+            rows.append(
+                {
+                    "source": "CALM",
+                    "tier": tier,
+                    "first": first,
+                    "last": last,
+                    "full_name": m.get("name") or f"{first} {last}".strip(),
+                    "organization": organization,
+                    "license_type": license_type,
+                    "license_no": license_no,
+                    "city": city,
+                    "primary_county": primary_county,
+                    "counties_all": counties_raw,
+                    "email": email,
+                    "phone": phone,
+                    "website": web,
+                    "medi_cal": medi_cal,
+                    "practice_details": practice_details,
+                    "profile_url": m.get("profile_url") or "",
+                    "notes": "",
+                }
+            )
 
-        rows.append(
-            {
-                "first": first,
-                "last": last,
-                "full_name": m.get("name") or f"{first} {last}".strip(),
-                "organization": organization,
-                "license_type": license_type,
-                "license_no": license_no,
-                "city": city,
-                "primary_county": primary_county,
-                "counties_all": counties_raw,
-                "email": email,
-                "phone": phone,
-                "website": web,
-                "medi_cal": medi_cal,
-                "practice_details": practice_details,
-                "profile_url": m.get("profile_url") or "",
-            }
-        )
-
-    # Priority: LM+CNM or solo practice with email gets higher weight,
-    # and practices that already turn down Medi-Cal are the strongest
-    # fit for our private-pay, trust-first pitch.
+    # Priority score: Tier 1 (has email) always beats Tier 2/3. Within tier,
+    # LMs, orgs with websites, private-pay practices, and the big three
+    # counties get bonus weight. Confirmed by two sources (CALM + Supabase)
+    # gets an extra bump.
     def score(r):
         s = 0
-        if r["email"]:
+        tier = int(r.get("tier") or 3)
+        if tier == 1:
+            s += 8
+        elif tier == 2:
             s += 3
-        if r["license_type"].upper().startswith("LM"):
+        if str(r.get("license_type") or "").upper().startswith("LM"):
             s += 2
-        if r["organization"]:
+        if r.get("organization"):
             s += 1
-        if r["website"]:
+        if r.get("website"):
             s += 1
-        if (r["medi_cal"] or "").strip().lower() == "no":
+        if (r.get("medi_cal") or "").strip().lower() == "no":
             s += 1
-        if r["primary_county"] in ("Los Angeles", "Orange", "San Diego"):
+        if r.get("primary_county") in ("Los Angeles", "Orange", "San Diego"):
+            s += 1
+        if r.get("source") == "CALM + Supabase":
             s += 1
         return s
 
-    rows.sort(key=lambda r: (-score(r), r["last"].lower(), r["first"].lower()))
+    rows.sort(key=lambda r: (-score(r), (r.get("last") or "").lower(), (r.get("first") or "").lower()))
     for i, r in enumerate(rows, 1):
         r["priority"] = i
     return rows
@@ -166,17 +193,22 @@ def build_targets_sheet(wb, rows):
 
     ws["A1"] = "SoCal Midwife Outreach Targets"
     ws["A1"].font = title_font()
-    ws.merge_cells("A1:R1")
+    ws.merge_cells("A1:T1")
 
-    ws["A2"] = "Source: California Association of Licensed Midwives directory, filtered to 8 SoCal counties. Generated from outreach/calm-enriched.json."
+    ws["A2"] = (
+        "Combined pool: CALM directory + Supabase providers table, filtered to 8 SoCal counties. "
+        "Tier 1 has email, Tier 2 has practice website, Tier 3 needs manual research."
+    )
     ws["A2"].font = subtitle_font()
-    ws.merge_cells("A2:R2")
+    ws.merge_cells("A2:T2")
     ws.row_dimensions[1].height = 26
     ws.row_dimensions[2].height = 18
 
     header_row = 4
     cols = [
         "Priority",
+        "Tier",
+        "Source",
         "First Name",
         "Last Name",
         "Practice / Organization",
@@ -189,44 +221,50 @@ def build_targets_sheet(wb, rows):
         "Phone",
         "Website",
         "Medi-Cal?",
-        "In Supabase?",
         "Last Contacted",
         "Status",
         "Practice Details",
-        "CALM Profile",
+        "Profile / Notes",
+        "Free-form Notes",
     ]
     apply_header(ws, header_row, cols)
     ws.row_dimensions[header_row].height = 32
 
+    tier_fills = {
+        1: PatternFill("solid", start_color="E3F0DB", end_color="E3F0DB"),  # soft green
+        2: PatternFill("solid", start_color="FCEFE0", end_color="FCEFE0"),  # soft peach
+        3: PatternFill("solid", start_color="F3E9F7", end_color="F3E9F7"),  # soft lavender
+    }
+
     start = header_row + 1
     for i, r in enumerate(rows):
         rr = start + i
-        ws.cell(row=rr, column=1, value=r["priority"])
-        ws.cell(row=rr, column=2, value=r["first"])
-        ws.cell(row=rr, column=3, value=r["last"])
-        ws.cell(row=rr, column=4, value=r["organization"])
-        ws.cell(row=rr, column=5, value=r["license_type"])
-        ws.cell(row=rr, column=6, value=r["license_no"])
-        ws.cell(row=rr, column=7, value=r["city"])
-        ws.cell(row=rr, column=8, value=r["primary_county"])
-        ws.cell(row=rr, column=9, value=r["counties_all"])
-        ws.cell(row=rr, column=10, value=r["email"])
-        ws.cell(row=rr, column=11, value=r["phone"])
-        web = r["website"]
-        if web and not web.startswith("http"):
-            web_display = web
-        else:
-            web_display = web
-        ws.cell(row=rr, column=12, value=web_display)
-        ws.cell(row=rr, column=13, value=r["medi_cal"])
-        ws.cell(row=rr, column=14, value="Unknown")
-        ws.cell(row=rr, column=15, value=None)
-        ws.cell(row=rr, column=16, value="Not contacted")
-        ws.cell(row=rr, column=17, value=r["practice_details"])
-        ws.cell(row=rr, column=18, value=r["profile_url"])
+        ws.cell(row=rr, column=1, value=r.get("priority"))
+        ws.cell(row=rr, column=2, value=int(r.get("tier") or 3))
+        ws.cell(row=rr, column=3, value=r.get("source") or "")
+        ws.cell(row=rr, column=4, value=r.get("first") or "")
+        ws.cell(row=rr, column=5, value=r.get("last") or "")
+        ws.cell(row=rr, column=6, value=r.get("organization") or "")
+        ws.cell(row=rr, column=7, value=r.get("license_type") or "")
+        ws.cell(row=rr, column=8, value=r.get("license_no") or "")
+        ws.cell(row=rr, column=9, value=r.get("city") or "")
+        ws.cell(row=rr, column=10, value=r.get("primary_county") or "")
+        ws.cell(row=rr, column=11, value=r.get("counties_all") or "")
+        ws.cell(row=rr, column=12, value=r.get("email") or "")
+        ws.cell(row=rr, column=13, value=r.get("phone") or "")
+        ws.cell(row=rr, column=14, value=r.get("website") or "")
+        ws.cell(row=rr, column=15, value=r.get("medi_cal") or "")
+        ws.cell(row=rr, column=16, value=None)
+        ws.cell(row=rr, column=17, value="Not contacted")
+        ws.cell(row=rr, column=18, value=r.get("practice_details") or "")
+        ws.cell(row=rr, column=19, value=r.get("profile_url") or "")
+        ws.cell(row=rr, column=20, value=r.get("notes") or "")
 
-        fill = soft_fill() if i % 2 == 0 else None
-        for col in range(1, 19):
+        tier = int(r.get("tier") or 3)
+        base_fill = tier_fills.get(tier)
+        stripe_fill = soft_fill() if i % 2 == 0 and tier != 1 else None
+        fill = base_fill if tier in (1, 2) else stripe_fill
+        for col in range(1, 21):
             cell = ws.cell(row=rr, column=col)
             cell.font = body_font()
             cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
@@ -234,11 +272,16 @@ def build_targets_sheet(wb, rows):
             if fill:
                 cell.fill = fill
 
+        # Make the tier cell pop so scanning is easy
+        tier_cell = ws.cell(row=rr, column=2)
+        tier_cell.font = Font(name=FONT_NAME, size=10, bold=True, color=LAVENDER_DARK)
+        tier_cell.alignment = Alignment(horizontal="center", vertical="center")
+
     set_col_widths(
         ws,
-        [8, 12, 16, 28, 12, 10, 14, 16, 22, 30, 16, 24, 10, 14, 14, 16, 50, 30],
+        [8, 6, 18, 12, 16, 28, 12, 10, 14, 16, 22, 30, 16, 24, 10, 14, 16, 40, 30, 30],
     )
-    ws.freeze_panes = ws.cell(row=start, column=3)
+    ws.freeze_panes = ws.cell(row=start, column=4)
     return ws, start, start + len(rows) - 1
 
 
@@ -528,10 +571,10 @@ def build_summary_sheet(wb, targets_first_row, targets_last_row, log_first_row, 
 
     ws["A1"] = "Outreach Dashboard"
     ws["A1"].font = title_font()
-    ws.merge_cells("A1:D1")
+    ws.merge_cells("A1:E1")
     ws["A2"] = "All numbers are live formulas reading from Targets and Outreach Log."
     ws["A2"].font = subtitle_font()
-    ws.merge_cells("A2:D2")
+    ws.merge_cells("A2:E2")
     ws.row_dimensions[1].height = 26
     ws.row_dimensions[2].height = 18
 
@@ -548,42 +591,68 @@ def build_summary_sheet(wb, targets_first_row, targets_last_row, log_first_row, 
         vc.number_format = fmt
         vc.alignment = Alignment(horizontal="left", vertical="center")
 
+    # New Targets layout:
+    #  A Priority  B Tier  C Source  D First  E Last  F Practice
+    #  G License Type  H License #  I City  J Primary County
+    #  K Counties  L Email  M Phone  N Website  O Medi-Cal
+    #  P Last Contacted  Q Status  R Practice Details  S Profile  T Notes
+    targets_priority_range = f"Targets!$A${targets_first_row}:$A${targets_last_row}"
+    targets_tier_range = f"Targets!$B${targets_first_row}:$B${targets_last_row}"
+    targets_source_range = f"Targets!$C${targets_first_row}:$C${targets_last_row}"
+    targets_license_range = f"Targets!$G${targets_first_row}:$G${targets_last_row}"
+    targets_county_range = f"Targets!$J${targets_first_row}:$J${targets_last_row}"
+    targets_email_range = f"Targets!$L${targets_first_row}:$L${targets_last_row}"
+    targets_website_range = f"Targets!$N${targets_first_row}:$N${targets_last_row}"
+    targets_medi_range = f"Targets!$O${targets_first_row}:$O${targets_last_row}"
+
     ws.cell(row=4, column=1, value="TARGET ROSTER").font = section_font
 
-    targets_email_range = f"Targets!$J${targets_first_row}:$J${targets_last_row}"
-    targets_license_range = f"Targets!$E${targets_first_row}:$E${targets_last_row}"
-    targets_medi_range = f"Targets!$M${targets_first_row}:$M${targets_last_row}"
-
-    place(5, "Total SoCal targets", f"=COUNTA({targets_email_range})")
+    place(5, "Total targets", f"=COUNTA({targets_priority_range})")
     place(6, "With email on file", f'=COUNTIF({targets_email_range},"?*")')
-    place(7, "LM practices", f'=COUNTIF({targets_license_range},"LM*")')
-    place(8, "Accept Medi-Cal", f'=COUNTIF({targets_medi_range},"Yes")')
+    place(7, "With website only", f'=COUNTIF({targets_website_range},"?*")-COUNTIFS({targets_email_range},"?*",{targets_website_range},"?*")')
+    place(8, "LM practices", f'=COUNTIF({targets_license_range},"LM*")')
+    place(9, "Accept Medi-Cal", f'=COUNTIF({targets_medi_range},"Yes")')
 
-    ws.cell(row=10, column=1, value="OUTREACH FUNNEL").font = section_font
+    ws.cell(row=11, column=1, value="TIER BREAKDOWN").font = section_font
+    place(12, "Tier 1 (email ready)", f"=COUNTIF({targets_tier_range},1)")
+    place(13, "Tier 2 (website only)", f"=COUNTIF({targets_tier_range},2)")
+    place(14, "Tier 3 (needs research)", f"=COUNTIF({targets_tier_range},3)")
+
+    ws.cell(row=16, column=1, value="SOURCE BREAKDOWN").font = section_font
+    place(17, "CALM directory", f'=COUNTIF({targets_source_range},"CALM")')
+    place(18, "Supabase roster", f'=COUNTIF({targets_source_range},"Supabase")')
+    place(19, "CALM + Supabase (confirmed)", f'=COUNTIF({targets_source_range},"CALM + Supabase")')
+
+    ws.cell(row=21, column=1, value="TOP COUNTIES").font = section_font
+    place(22, "Los Angeles", f'=COUNTIF({targets_county_range},"Los Angeles")')
+    place(23, "San Diego", f'=COUNTIF({targets_county_range},"San Diego")')
+    place(24, "Orange", f'=COUNTIF({targets_county_range},"Orange")')
+
+    ws.cell(row=26, column=1, value="OUTREACH FUNNEL").font = section_font
 
     log_variant_range = f"'Outreach Log'!$D${log_first_row}:$D${log_last_row}"
     log_opened_range = f"'Outreach Log'!$G${log_first_row}:$G${log_last_row}"
     log_replied_range = f"'Outreach Log'!$H${log_first_row}:$H${log_last_row}"
     log_outcome_range = f"'Outreach Log'!$I${log_first_row}:$I${log_last_row}"
 
-    place(11, "Total sends", f'=COUNTIF({log_variant_range},"?*")')
-    place(12, "Opened", f'=COUNTIF({log_opened_range},"Yes")')
-    place(13, "Replied", f'=COUNTIF({log_replied_range},"Yes")')
-    place(14, "Meetings booked", f'=COUNTIF({log_outcome_range},"*Meeting*")')
-    place(15, "Reply rate", f"=IFERROR(B13/B11,0)", "0.0%")
+    place(27, "Total sends", f'=COUNTIF({log_variant_range},"?*")')
+    place(28, "Opened", f'=COUNTIF({log_opened_range},"Yes")')
+    place(29, "Replied", f'=COUNTIF({log_replied_range},"Yes")')
+    place(30, "Meetings booked", f'=COUNTIF({log_outcome_range},"*Meeting*")')
+    place(31, "Reply rate", f"=IFERROR(B29/B27,0)", "0.0%")
 
-    ws.cell(row=17, column=1, value="VARIANT PERFORMANCE").font = section_font
+    ws.cell(row=33, column=1, value="VARIANT PERFORMANCE").font = section_font
     variant_header = ["Variant", "Sends", "Opens", "Replies", "Reply Rate"]
     for i, h in enumerate(variant_header, 1):
-        c = ws.cell(row=18, column=i, value=h)
+        c = ws.cell(row=34, column=i, value=h)
         c.font = header_font()
         c.fill = header_fill()
         c.alignment = Alignment(horizontal="left", vertical="center")
         c.border = thin_border
-    ws.row_dimensions[18].height = 24
+    ws.row_dimensions[34].height = 24
 
     for i, letter in enumerate(["A", "B", "C", "D"]):
-        rr = 19 + i
+        rr = 35 + i
         ws.cell(row=rr, column=1, value=f"Variant {letter}").font = label_font
         ws.cell(
             row=rr,
@@ -621,27 +690,42 @@ def build_summary_sheet(wb, targets_first_row, targets_last_row, log_first_row, 
             if fill:
                 cell.fill = fill
 
-    ws.cell(row=24, column=1, value="Goal: reply rate above 15 percent across any single variant before scaling.").font = muted_font()
-    ws.merge_cells("A24:E24")
+    ws.cell(row=40, column=1, value="Goal: reply rate above 15 percent across any single variant before scaling.").font = muted_font()
+    ws.merge_cells("A40:E40")
 
-    set_col_widths(ws, [28, 16, 14, 14, 16])
-    ws.row_dimensions[5].height = 30
-    ws.row_dimensions[6].height = 30
-    ws.row_dimensions[7].height = 30
-    ws.row_dimensions[8].height = 30
-    ws.row_dimensions[11].height = 30
-    ws.row_dimensions[12].height = 30
-    ws.row_dimensions[13].height = 30
-    ws.row_dimensions[14].height = 30
-    ws.row_dimensions[15].height = 30
+    set_col_widths(ws, [30, 16, 14, 14, 16])
+    for r in (5, 6, 7, 8, 9, 12, 13, 14, 17, 18, 19, 22, 23, 24, 27, 28, 29, 30, 31):
+        ws.row_dimensions[r].height = 28
 
 
 def main():
-    if not INPUT.exists():
-        raise SystemExit(f"Missing input: {INPUT}. Run scripts/scrape-calm.mjs first.")
+    if COMBINED_INPUT.exists():
+        source_label = COMBINED_INPUT.name
+    elif CALM_INPUT.exists():
+        source_label = CALM_INPUT.name
+    else:
+        raise SystemExit(
+            f"Missing input. Run scripts/dedupe-calm-vs-supabase.mjs "
+            f"(preferred) or scripts/scrape-calm.mjs first. "
+            f"Looked for: {COMBINED_INPUT.name}, {CALM_INPUT.name}."
+        )
 
     rows = load_targets()
-    print(f"Loaded {len(rows)} SoCal targets from {INPUT.name}")
+    print(f"Loaded {len(rows)} SoCal targets from {source_label}")
+
+    # Tier + source breakdown so we know at a glance what we are working with
+    tiers = {1: 0, 2: 0, 3: 0}
+    sources = {}
+    for r in rows:
+        tiers[int(r.get("tier") or 3)] = tiers.get(int(r.get("tier") or 3), 0) + 1
+        sources[r.get("source") or "Unknown"] = sources.get(r.get("source") or "Unknown", 0) + 1
+    print(
+        f"  Tier 1 (email): {tiers.get(1, 0)}  "
+        f"Tier 2 (website): {tiers.get(2, 0)}  "
+        f"Tier 3 (research): {tiers.get(3, 0)}"
+    )
+    for k, v in sorted(sources.items(), key=lambda x: -x[1]):
+        print(f"  {k}: {v}")
 
     wb = Workbook()
     wb.remove(wb.active)
