@@ -12,13 +12,19 @@
 
 export const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
-/** Debug mode is gated by BOTH the env var AND a non-prod build. This makes
- *  the code resilient to misconfiguration in Vercel — if someone sets
- *  NEXT_PUBLIC_GA_DEBUG=1 on Production by mistake, prod traffic still
- *  flows to standard reports instead of being routed to DebugView only. */
+/** Debug mode is gated by BOTH the env var AND a non-Production Vercel env.
+ *  We use NEXT_PUBLIC_VERCEL_ENV (not NODE_ENV) because Vercel Preview builds
+ *  run with NODE_ENV=production — they share the optimized build path with
+ *  Production. NEXT_PUBLIC_VERCEL_ENV distinguishes `preview` from
+ *  `production`, and is undefined locally (next dev), so:
+ *    - Production (VERCEL_ENV=production): short-circuits, no debug
+ *    - Preview (VERCEL_ENV=preview): honors the env var
+ *    - Local dev (VERCEL_ENV=undefined): honors the env var
+ *  This keeps prod traffic clean even if NEXT_PUBLIC_GA_DEBUG leaks into
+ *  Production by misconfiguration. */
 export const GA_DEBUG =
   process.env.NEXT_PUBLIC_GA_DEBUG === "1" &&
-  process.env.NODE_ENV !== "production";
+  process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";
 
 const isEnabled = (): boolean => {
   if (typeof window === "undefined") return false;

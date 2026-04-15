@@ -7,7 +7,7 @@ import { AnalyticsListener } from "@/components/AnalyticsListener";
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 const GA_DEBUG =
   process.env.NEXT_PUBLIC_GA_DEBUG === "1" &&
-  process.env.NODE_ENV !== "production";
+  process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
