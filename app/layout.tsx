@@ -5,6 +5,9 @@ import "./globals.css";
 import { AnalyticsListener } from "@/components/AnalyticsListener";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const GA_DEBUG =
+  process.env.NEXT_PUBLIC_GA_DEBUG === "1" &&
+  process.env.NODE_ENV !== "production";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -76,7 +79,7 @@ export default function RootLayout({
               strategy="afterInteractive"
             />
             <Script id="ga4" strategy="afterInteractive">
-              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}',{send_page_view:false});`}
+              {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}',{send_page_view:false${GA_DEBUG ? ",debug_mode:true" : ""}});`}
             </Script>
           </>
         )}
