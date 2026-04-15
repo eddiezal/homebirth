@@ -11,24 +11,34 @@
  */
 
 export const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+const DEBUG_MODE = process.env.NEXT_PUBLIC_GA_DEBUG === "1";
 
 const isEnabled = (): boolean => {
   if (typeof window === "undefined") return false;
   if (!GA_ID) return false;
-  if (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_GA_DEBUG !== "1") {
+  if (process.env.NODE_ENV !== "production" && !DEBUG_MODE) {
     return false;
   }
   return typeof window.gtag === "function";
 };
 
+/** Tag every event with debug_mode when NEXT_PUBLIC_GA_DEBUG=1 so it
+ *  shows up in GA4 DebugView. */
+const withDebug = (params: Record<string, unknown>): Record<string, unknown> =>
+  DEBUG_MODE ? { ...params, debug_mode: true } : params;
+
 /** Fire a page_view event. Call on route change. */
 export function pageview(url: string): void {
   if (!isEnabled()) return;
-  window.gtag("event", "page_view", {
-    page_path: url,
-    page_location: window.location.href,
-    page_title: document.title,
-  });
+  window.gtag(
+    "event",
+    "page_view",
+    withDebug({
+      page_path: url,
+      page_location: window.location.href,
+      page_title: document.title,
+    }),
+  );
 }
 
 /** Fire an arbitrary GA4 event. */
@@ -37,7 +47,7 @@ export function trackEvent(
   params: Record<string, unknown> = {},
 ): void {
   if (!isEnabled()) return;
-  window.gtag("event", name, params);
+  window.gtag("event", name, withDebug(params));
 }
 
 declare global {
